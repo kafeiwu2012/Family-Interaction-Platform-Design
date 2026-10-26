@@ -1,0 +1,16 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'org.family.capture'
+    compileSdk 35
+    buildToolsVersion "35.0.0"
+    defaultConfig {
+        applicationId 'org.family.capture'
+        minSdk 22
+        targetSdk 22
+        versionCode 1
+        versionName '0.1.0'
+    }
+    // Dedicated API 22 sideload build; not a Google Play distribution.
+    lint { disable "ExpiredTargetSdkVersion" }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_1_8; targetCompatibility JavaVersion.VERSION_1_8 }
+}

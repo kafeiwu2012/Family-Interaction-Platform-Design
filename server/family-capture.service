@@ -1,0 +1,18 @@
+[Unit]
+Description=Family Capture Receiver
+After=network.target
+[Service]
+User=familycapture
+Group=familycapture
+WorkingDirectory=/opt/family-capture/server
+EnvironmentFile=/etc/family-capture.env
+ExecStart=/usr/bin/python3 /opt/family-capture/server/server.py
+Restart=on-failure
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/family-capture
+[Install]
+WantedBy=multi-user.target
