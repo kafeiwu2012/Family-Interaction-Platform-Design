@@ -10,7 +10,7 @@ cd android
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-GitHub Release 提供测试用 debug APK；使用标准调试签名，非生产发布签名，不含服务地址或令牌。安装后需自行配置。正式部署前完成真机验收并使用自己的发布签名。
+仓库 `downloads/` 目录提供测试用 debug APK；使用标准调试签名，非生产发布签名，不含服务地址或令牌。安装后需自行配置。正式部署前完成真机验收并使用自己的发布签名。
 
 首次构建需要下载 Google Maven 工件。正式使用配置自己的 release keystore，备份密钥，不要将其提交 Git。targetSdk 22 是此遗留设备版本的明确选择；API 22 在安装时授予 CAMERA 权限。不要直接升级 targetSdk 后认为行为不变。
 

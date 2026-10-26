@@ -14,3 +14,5 @@ Android 5.1.1 / API 22 定时拍照 → HTTPS → 树莓派 3B（或 Linux 云�
 - `server/`：Python 标准库服务及集成测试
 
 运行测试：`cd server && python3 -m unittest -v`
+
+测试 APK：[下载 v0.1.0 debug](downloads/family-capture-0.1.0-debug.apk) · [SHA256](downloads/SHA256SUMS)。
