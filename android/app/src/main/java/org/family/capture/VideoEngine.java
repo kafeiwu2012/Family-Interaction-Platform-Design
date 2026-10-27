@@ -51,7 +51,7 @@ final class VideoEngine {
                     },handler);}catch(Exception e){finish(false,e.toString());}
                 }
                 public void onDisconnected(CameraDevice d){d.close();if(id==generation)finish(false,"相机断开");}
-                public void onError(CameraDevice d,int code){d.close();if(id==generation)finish(false,"camera error "+code);}
+                public void onError(CameraDevice d,int code){d.close();if(id==generation)finish(false,CameraEngine.cameraError(code));}
             },handler);
         }catch(Exception e){finish(false,e.toString());}
     }

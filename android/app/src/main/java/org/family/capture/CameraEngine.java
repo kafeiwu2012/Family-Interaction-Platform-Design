@@ -29,8 +29,10 @@ final class CameraEngine {
             CameraManager m=(CameraManager)c.getSystemService(Context.CAMERA_SERVICE);
             for(String id:m.getCameraIdList()) {
                 CameraCharacteristics k=m.getCameraCharacteristics(id);
-                out.append("ID ").append(id).append(" facing=").append(k.get(CameraCharacteristics.LENS_FACING))
-                   .append(" hardwareLevel=").append(k.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL)).append('\n');
+                Integer facing=k.get(CameraCharacteristics.LENS_FACING),level=k.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+                String direction=Integer.valueOf(CameraCharacteristics.LENS_FACING_FRONT).equals(facing)?"前摄":"后摄";
+                String hardware=Integer.valueOf(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY).equals(level)?"LEGACY（兼容模式）":String.valueOf(level);
+                out.append(direction).append(" · ID ").append(id).append(" · ").append(hardware).append('\n');
             }
         } catch(Exception e) { out.append(e.getClass().getSimpleName()); }
         return out.toString();
@@ -94,7 +96,7 @@ final class CameraEngine {
                     } catch(Exception e) { finish(false,e.getClass().getSimpleName()); }
                 }
                 @Override public void onDisconnected(CameraDevice c) { c.close(); if(attempt==generation) finish(false,"camera disconnected"); }
-                @Override public void onError(CameraDevice c,int error) { c.close(); if(attempt==generation) finish(false,"camera error "+error); }
+                @Override public void onError(CameraDevice c,int error) { c.close(); if(attempt==generation) finish(false,cameraError(error)); }
             },handler);
         } catch(Exception e) { finish(false,e.getClass().getSimpleName()); }
     }
@@ -105,6 +107,11 @@ final class CameraEngine {
         if(device!=null) { device.close(); device=null; }
         if(reader!=null) { reader.close(); reader=null; }
         Result cb=result; result=null; cb.done(ok,detail);
+    }
+    static String cameraError(int error){
+        if(error==CameraDevice.StateCallback.ERROR_MAX_CAMERAS_IN_USE)return "同时可用摄像头已达上限（错误2），请串行使用前后摄";
+        if(error==CameraDevice.StateCallback.ERROR_CAMERA_IN_USE)return "摄像头被占用（错误1），请关闭其他相机应用后重试";
+        return "摄像头错误 "+error;
     }
     void close() { if(!completed.get()) finish(false,"stopped"); }
 }

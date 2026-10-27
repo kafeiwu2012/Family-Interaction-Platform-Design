@@ -14,34 +14,55 @@ public class PhotosActivity extends Activity {
     private int generation;
     @Override public void onCreate(Bundle state){super.onCreate(state);if(state!=null&&state.getStringArrayList("export")!=null)exportPaths=state.getStringArrayList("export");showList();}
     private ListView list;
+    private final java.util.Set<String> checked=new java.util.HashSet<>();
+    private TextView selection;
+    private BaseAdapter adapter;
     private File[] items=new File[0];
     private java.util.ArrayList<String> exportPaths=new java.util.ArrayList<>();
     private boolean exporting;
     private java.util.ArrayList<File> selected(){
         java.util.ArrayList<File> result=new java.util.ArrayList<>();
-        for(int i=0;i<items.length;i++)if(list.isItemChecked(i))result.add(items[i]);
+        for(int i=0;i<items.length;i++)if(checked.contains(items[i].getName()))result.add(items[i]);
         return result;
     }
     private void showList(){
         generation++;
-        LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(12,12,12,12);
         File dir=new File(getFilesDir(),"local-photos");
         File[] files=dir.listFiles((d,n)->n.endsWith(".jpg")||n.endsWith(".mp4"));if(files==null)files=new File[0];
         Arrays.sort(files,(a,b)->Long.compare(b.lastModified(),a.lastModified()));items=files;
-        TextView hint=new TextView(this);hint.setText("本地照片/视频："+files.length+" 个。点击多选，长按预览。导出为ZIP，原文件保留。");root.addView(hint);
+        TextView hint=new TextView(this);hint.setText("本地照片/视频："+files.length+" 个。点击条目预览/播放；勾选右侧方框多选。导出为ZIP，原文件保留。");root.addView(hint);
         LinearLayout buttons=new LinearLayout(this);
-        Button all=new Button(this);all.setText("全选/取消");buttons.addView(all);
-        Button delete=new Button(this);delete.setText("删除所选");buttons.addView(delete);
-        Button export=new Button(this);export.setText("导出所选");buttons.addView(export);root.addView(buttons);
-        list=new ListView(this);list.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        String[] names=new String[files.length];for(int i=0;i<files.length;i++)names[i]=MediaNames.display(files[i]);
-        list.setAdapter(new ArrayAdapter<String>(this,android.R.layout.simple_list_item_multiple_choice,names));root.addView(list,new LinearLayout.LayoutParams(-1,0,1));
-        all.setOnClickListener(v->{boolean check=list.getCheckedItemCount()!=items.length;for(int i=0;i<items.length;i++)list.setItemChecked(i,check);});
+        Button all=new Button(this);all.setText("全选/取消");all.setMinWidth(0);buttons.addView(all,new LinearLayout.LayoutParams(0,-2,1));
+        Button delete=new Button(this);delete.setText("删除所选");delete.setMinWidth(0);buttons.addView(delete,new LinearLayout.LayoutParams(0,-2,1));
+        Button export=new Button(this);export.setText("导出所选");export.setMinWidth(0);buttons.addView(export,new LinearLayout.LayoutParams(0,-2,1));root.addView(buttons);
+        selection=new TextView(this);root.addView(selection);
+        list=new ListView(this);
+        adapter=new BaseAdapter(){
+            public int getCount(){return items.length;}
+            public Object getItem(int position){return items[position];}
+            public long getItemId(int position){return position;}
+            public android.view.View getView(int position,android.view.View old,android.view.ViewGroup parent){
+                File file=items[position];
+                LinearLayout row=new LinearLayout(PhotosActivity.this);row.setPadding(8,16,8,16);row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+                LinearLayout texts=new LinearLayout(PhotosActivity.this);texts.setOrientation(LinearLayout.VERTICAL);
+                String readable=MediaNames.display(file);boolean front=readable.startsWith("前摄");boolean video=file.getName().endsWith(".mp4");
+                TextView title=new TextView(PhotosActivity.this);title.setText((front?"前摄":"后摄")+" · "+(video?"视频  ▶ 点击播放":"照片 · 点击查看"));title.setTextSize(18);texts.addView(title);
+                TextView detail=new TextView(PhotosActivity.this);detail.setText(readable+"\n大小："+android.text.format.Formatter.formatFileSize(PhotosActivity.this,file.length()));detail.setTextSize(14);detail.setSingleLine(false);detail.setHorizontallyScrolling(false);detail.setEllipsize(null);texts.addView(detail);
+                row.addView(texts,new LinearLayout.LayoutParams(0,-2,1));
+                CheckBox box=new CheckBox(PhotosActivity.this);box.setContentDescription("选择 "+readable);box.setFocusable(false);box.setChecked(checked.contains(file.getName()));
+                box.setOnCheckedChangeListener((v,on)->{if(on)checked.add(file.getName());else checked.remove(file.getName());updateSelection();});row.addView(box);
+                return row;
+            }
+        };
+        list.setAdapter(adapter);root.addView(list,new LinearLayout.LayoutParams(-1,0,1));updateSelection();
+        list.setOnItemClickListener((a,v,pos,id)->{if(items[pos].getName().endsWith(".mp4"))showVideo(items[pos]);else showImage(items[pos]);});
+        all.setOnClickListener(v->{if(checked.size()==items.length)checked.clear();else for(File f:items)checked.add(f.getName());adapter.notifyDataSetChanged();updateSelection();});
         delete.setOnClickListener(v->{
             if(exporting){toast("导出中，请等待完成再删除");return;}
             java.util.ArrayList<File> picked=selected();if(picked.isEmpty()){toast("请先选择文件");return;}
             new AlertDialog.Builder(this).setMessage("永久删除所选 "+picked.size()+" 个文件？").setNegativeButton("取消",null).setPositiveButton("删除",(d,w)->{
-                worker.execute(()->{int failed=0;for(File f:picked)if(!f.delete())failed++;final int errors=failed;runOnUiThread(()->{if(!isFinishing()){toast("删除完成，失败 "+errors+" 个");showList();}});});
+                worker.execute(()->{int failed=0;for(File f:picked)if(!f.delete())failed++;final int errors=failed;runOnUiThread(()->{if(!isFinishing()){toast("删除完成，失败 "+errors+" 个");checked.clear();showList();}});});
             }).show();
         });
         export.setOnClickListener(v->{
@@ -74,11 +95,9 @@ public class PhotosActivity extends Activity {
             final String text=message;runOnUiThread(()->{exporting=false;if(!isFinishing())toast(text);});
         });
     }
+    private void updateSelection(){selection.setText("已选择 "+selected().size()+" / "+items.length+" 个");}
     private void showVideo(File file){
-        VideoView video=new VideoView(this);video.setVideoPath(file.getPath());
-        MediaController controller=new MediaController(this);controller.setAnchorView(video);video.setMediaController(controller);
-        video.setOnPreparedListener(p->video.start());video.setOnErrorListener((p,a,b)->{toast("视频无法播放");return true;});
-        new AlertDialog.Builder(this).setTitle(MediaNames.display(file)).setView(video).setPositiveButton("关闭",null).setOnDismissListener(d->video.stopPlayback()).show();
+        startActivity(new android.content.Intent(this,PlaybackActivity.class).putExtra("name",file.getName()));
     }
     private void showImage(File file){
         final int attempt=++generation;
