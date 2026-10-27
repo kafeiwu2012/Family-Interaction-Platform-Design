@@ -125,3 +125,11 @@ ffprobe -v error -select_streams v:0 -show_entries frame=best_effort_timestamp_t
 ```
 
 `r_frame_rate`/`avg_frame_rate` 不能单独证明无丢帧；结合逐帧时间戳、运动画面回放和实际段长评估。预览顺滑与保存文件顺滑必须分别验收。
+
+## 本版交付验证记录
+
+- 源码提交：`7d21f135385c5ee6830e15fa109be0cf0a66c35e`。
+- [GitHub Actions 构建](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40454646205)：Java 策略测试、语法/XML、APK 编译及 Android lint 全部通过。
+- [1.1.0 测试 APK](../downloads/vehicle-recorder-1.1.0-debug.apk?raw=true)；SHA-256 见 downloads/SHA256SUMS。
+- 已比较 APK 签名公钥：本仓库 1.0.0 测试包与 1.1.0 的签名不同，不能覆盖安装；须先备份录像并记录原目录，再卸载旧版安装新版。应用专用目录卸载会删除。
+- 尚未实测：本版在 OPPO R7sm 上的实际预览帧率、保存文件掉帧、熄屏 30 分钟和两小时温控稳定性。
