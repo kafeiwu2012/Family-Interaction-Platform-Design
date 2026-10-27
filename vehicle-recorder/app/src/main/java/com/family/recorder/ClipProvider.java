@@ -14,7 +14,7 @@ public final class ClipProvider extends ContentProvider {
         try {
             if(uri.getPathSegments().size()!=1)throw new IOException();
             File f=new File(uri.getLastPathSegment()).getCanonicalFile();
-            boolean allowed=f.getParentFile().equals(Config.directory(getContext()).getCanonicalFile());
+            boolean allowed=f.getParentFile().equals(Config.directory(getContext()).getCanonicalFile())||f.getParentFile().equals(new File(Config.defaultPath(getContext())).getCanonicalFile());
             for(String p:Config.prefs(getContext()).getString("history","").split("\n"))if(!p.isEmpty()&&f.getParentFile().equals(new File(p).getCanonicalFile()))allowed=true;
             if(!allowed||!LoopStore.owned(f)||!f.getName().endsWith(".mp4"))throw new IOException();return f;
         }catch(Exception e){throw new FileNotFoundException("不可访问此录像");}

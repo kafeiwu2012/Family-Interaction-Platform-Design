@@ -1,6 +1,10 @@
-# OPPO R7sm 行车记录仪 · 1.2.2
+# OPPO R7sm 行车记录仪 · 1.3.0
 
 <img src="docs/assets/vehicle-recorder-logo.png" alt="行车记录仪图标" width="96" />
+
+1.3.0 补齐录像库多选、批量删除、导出与分享。齿轮 → 录像库 → 多选；支持全选当前筛选，保护录像自动跳过删除。导出可选择系统目录/SD 卡或本地路径，每批新建子目录并保留原录像。
+
+[录像管理使用与开发说明](docs/RECORDING_MANAGEMENT.md)
 
 1.2.2 将菜单入口改为居中的圆形齿轮图标，点击时短暂上浮回弹；静止时无循环动画，系统省电或关闭动画时不播放。
 
@@ -60,6 +64,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 - [开发文档：架构、卡顿原因、设置事务、命名、构建及真机验收](docs/DEVELOPMENT.md)
 - [横竖屏、全屏与折叠菜单](docs/DISPLAY_MODES.md)
 - [菜单图标与轻量点击反馈](docs/MENU_INTERACTION.md)
+- [批量删除、导出和分享](docs/RECORDING_MANAGEMENT.md)
 - [更新记录](docs/CHANGELOG.md)
 
 本地检查覆盖循环删除和保护、配额/物理空间失败处理、文件命名和碰撞、旧格式兼容、设置应用策略、Java 语法和 XML。完整 API 兼容性以 Android 编译和 lint 为准；硬件帧率、发热及 ColorOS 后台行为须在 R7sm 真机验收。
