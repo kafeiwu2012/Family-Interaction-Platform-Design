@@ -77,13 +77,13 @@ public final class MainActivity extends Activity {
             for(String s:pref.getString("history","").split("\n"))if(!s.isEmpty()&&!choices.contains(s))choices.add(s);
             choices.add("浏览存储目录…");new AlertDialog.Builder(this).setTitle("选择目标路径").setItems(choices.toArray(new String[0]),(d,n)->{if(n==choices.size()-1)browse(android.os.Environment.getExternalStorageDirectory(),path);else path.setText(choices.get(n));}).show();
         });
-        form.addView(label("循环容量 MB（含锁定片段，最少 256）",14));EditText quota=new EditText(this);quota.setInputType(2);quota.setText(String.valueOf(pref.getInt("quota",2048)));form.addView(quota);
+        form.addView(label("循环容量 MB（含锁定片段，最少 256）",14));EditText quota=new EditText(this);quota.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);quota.setText(String.valueOf(pref.getInt("quota",2048)));form.addView(quota);
         int sec=Config.seconds(this);Spinner duration=spinner(form,"每段时长",new String[]{"1 分钟","3 分钟","5 分钟"},sec==60?0:sec==300?2:1);
         Spinner quality=spinner(form,"画质（不支持时自动降级）",new String[]{"720p · 推荐 R7sm","1080p · 更高功耗"},pref.getBoolean("hd",false)?1:0);
         Spinner rotation=spinner(form,"录像旋转角度（按安装方向选择）",new String[]{"0°","90°","180°","270°"},pref.getInt("rotation",0)/90);
         CheckBox audio=check(form,"录制声音","audio",true), stabilize=check(form,"电子防抖（设备支持时）","stabilize",true),torch=check(form,"后置常亮补光（增加发热）","torch",false);
         form.addView(label("锁定片段不自动删除。路径不可写、锁定占满或存储不足时停止并提示。熄屏后台需允许 ColorOS 自启动及后台运行。",13));
-        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("记录仪设置").setView(scroll).setNegativeButton("取消",null).setPositiveButton("保存",null).create();dialog.setOnShowListener(x->dialog.getButton(-1).setOnClickListener(v->{
+        AlertDialog dialog=new AlertDialog.Builder(this).setTitle("记录仪设置").setView(scroll).setNegativeButton("取消",null).setPositiveButton("保存",null).create();dialog.setOnShowListener(x->dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v->{
             try{
                 int mb=Integer.parseInt(quota.getText().toString());if(mb<256||mb>1048576)throw new IOException("容量应在 256～1048576 MB 之间");
                 int seconds=new int[]{60,180,300}[duration.getSelectedItemPosition()];long reserve=((quality.getSelectedItemPosition()==1?8000000L:4000000L)+128000)*seconds/8+4*1024*1024;

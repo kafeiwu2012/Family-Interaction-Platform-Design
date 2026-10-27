@@ -11,7 +11,7 @@ public final class ClipsActivity extends Activity {
     @Override public void onCreate(Bundle b){super.onCreate(b);refresh();}
     private void toast(String s){Toast.makeText(this,s,Toast.LENGTH_LONG).show();}
     private void refresh(){
-        LinearLayout root=new LinearLayout(this);root.setOrientation(1);root.setPadding(20,12,20,12);setContentView(root);
+        LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(20,12,20,12);setContentView(root);
         TextView title=new TextView(this);title.setText("录像库 · 当前目标路径\n"+Config.directory(this)+"\n已用 "+LoopStore.used(Config.directory(this))/1048576+" MB / "+Config.quota(this)/1048576+" MB · 锁定片段也计入配额");root.addView(title);
         Button back=new Button(this);back.setText("返回记录仪");root.addView(back);back.setOnClickListener(v->finish());
         ArrayList<File> clips=new ArrayList<>();for(File f:LoopStore.files(Config.directory(this)))if(f.getName().endsWith(".mp4"))clips.add(f);Collections.reverse(clips);

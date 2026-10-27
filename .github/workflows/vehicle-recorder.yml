@@ -5,6 +5,9 @@ on:
   pull_request:
     paths: ['vehicle-recorder/**', '.github/workflows/vehicle-recorder.yml']
   workflow_dispatch:
+concurrency:
+  group: vehicle-recorder-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
