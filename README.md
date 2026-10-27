@@ -7,9 +7,11 @@
 | `android-family-capture/` | Android 定时拍照、短录像、串行镜头交替及树莓派接收服务 | [源码与说明](android-family-capture/README.md) |
 | `vehicle-recorder/` | OPPO R7sm 行车记录仪：循环录像、容量与路径设置、前后镜头切换、熄屏录制、GPU 预览、录制中设置及启动自动录像 | [源码与说明](vehicle-recorder/README.md) |
 
-## 行车记录仪 · v1.3.0
+## 行车记录仪 · v1.3.1
 
 <img src="vehicle-recorder/docs/assets/vehicle-recorder-logo.png" alt="行车记录仪图标" width="96" />
+
+1.3.1 将红色“删除所选”放在“全选当前”旁，竖屏两行操作栏直接显示。原“清空”改名为“取消选择”，明确区分撤销勾选和删除文件。
 
 1.3.0 补齐录像库多选、全选当前筛选、批量删除、导出和分享。入口：齿轮 → 录像库 → 多选；保护录像自动跳过批量删除，导出复制到独立子目录。
 
@@ -21,7 +23,7 @@
 
 面向 Android 5–8 的原生行车记录仪，提供全屏预览、录像状态、三页设置与可按镜头或保护状态筛选的录像库。视频采用“前/后摄像头 + 日期时间”命名，支持片段保护和旧版录像管理。
 
-- **[下载行车记录仪 APK（v1.3.0）](vehicle-recorder/downloads/vehicle-recorder-1.3.0-debug.apk?raw=true)**
+- **[下载行车记录仪 APK（v1.3.1）](vehicle-recorder/downloads/vehicle-recorder-1.3.1-debug.apk?raw=true)**
 - [安装与使用说明](vehicle-recorder/README.md)
 - [开发文档：架构、性能优化、设置流程与真机验收](vehicle-recorder/docs/DEVELOPMENT.md)
 - [横竖屏、全屏与折叠菜单说明](vehicle-recorder/docs/DISPLAY_MODES.md)
@@ -32,7 +34,7 @@
 
 编译、Android lint 和自动化测试已通过；新版实际流畅度、熄屏和长时间稳定性仍需 R7sm 真机验收。修改编码或存储设置时会保存当前片段后继续，存在短暂间隔。
 
-**升级至 v1.3.0：已核对与此前提供的 v1.2.2 测试包签名不同。请先备份录像并记录保存路径，再卸载旧版安装；应用专用目录随卸载删除。**
+**升级至 v1.3.1：已核对与此前提供的 v1.3.0 测试包签名不同。请先备份录像并记录保存路径，再卸载旧版安装；应用专用目录随卸载删除。**
 
 ## 家庭影像采集
 

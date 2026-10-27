@@ -1,27 +1,28 @@
 # 行车记录仪测试安装包
 
-## 最新版 1.3.0
+## 最新版 1.3.1
 
-[下载 vehicle-recorder-1.3.0-debug.apk](./vehicle-recorder-1.3.0-debug.apk?raw=true)
+[下载 vehicle-recorder-1.3.1-debug.apk](./vehicle-recorder-1.3.1-debug.apk?raw=true)
 
-**入口：齿轮 → 录像库 → 多选（或长按录像）**
+**删除录像：齿轮 → 录像库 → 多选 → 全选当前 → 红色“删除所选” → 确认。保护录像自动跳过。**
 
-- 多选、全选当前筛选、清空、批量删除；受保护录像自动跳过删除。
-- 单条/批量导出：系统目录/SD 卡或本地路径，每次新建独立子目录，不主动删除源录像。
-- 单条/批量 Android 分享，只读授权；浏览当前、默认及预存目录，不改变录制保存位置。
-- 进度、取消及结果汇总。窄屏操作条可左右滚动。
-- 保留前置竖屏方向修复、齿轮轻量点击反馈及全部录制功能。
+- “删除所选”紧邻“全选当前”，窄屏分为两行，删除入口无需横向滑动寻找。
+- 原“清空”只会撤销勾选，现明确更名为“取消选择”：选择数归零、勾选同步清除、文件保留。
+- 无选择时禁用导出/分享/删除；保留单条和批量导出、保护及播放。
 
-[批量管理和导出说明](../docs/RECORDING_MANAGEMENT.md) · [使用说明](../README.md) · [更新记录](../docs/CHANGELOG.md) · [构建记录](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40469129858)
+1.3.0 不升级也能删除：全选后向左滑操作条，点最右侧红色“删除”并确认；该版本的“清空”不会删除录像。
 
-编译、Android lint、文件操作及现有自动化检查通过；系统目录选择器、外置卡和分享接收应用仍待 R7sm 真机验收。导出期间未保护的原录像仍参与循环覆盖，重要录像先保护。
+[录像管理说明](../docs/RECORDING_MANAGEMENT.md) · [使用说明](../README.md) · [更新记录](../docs/CHANGELOG.md) · [构建记录](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40470672022)
 
-**本包与此前提供的 1.2.2 测试签名不同。升级前请使用文件管理器备份录像、记下保存路径，再卸载旧版安装；应用专用目录随卸载删除。**
+编译、Android lint 和现有自动化检查通过，R7sm 实际点击及显示效果仍待确认。
 
-SHA-256：`13e9b31a87d102ff38c2955e8344dba074de252221344d1a19f593599700f77a`，亦见 SHA256SUMS。
+**已核对本包与 1.3.0 测试签名不同。请先导出或用文件管理器备份重要录像、记录路径，再卸载旧版安装；应用专用目录会随卸载删除。**
+
+SHA-256：`3b30f181465189e74cd8b44b6410d3b89bcbbb9d29eb7d2907a4f818c49c068a`，亦见 SHA256SUMS。
 
 ## 历史版
 
+- [1.3.0](./vehicle-recorder-1.3.0-debug.apk?raw=true)
 - [1.2.2](./vehicle-recorder-1.2.2-debug.apk?raw=true)
 - [1.2.1](./vehicle-recorder-1.2.1-debug.apk?raw=true)
 - [1.2.0](./vehicle-recorder-1.2.0-debug.apk?raw=true)
