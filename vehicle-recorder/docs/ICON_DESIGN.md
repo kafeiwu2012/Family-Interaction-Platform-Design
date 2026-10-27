@@ -29,3 +29,11 @@ python3 tools/render_icon.py
 ## 验收
 
 已检查所有旧版资源尺寸、透明通道和 XML 格式；APK 构建及 lint 由 GitHub Actions 检查。真机确认桌面图标、最近任务和录制通知显示；若桌面仍缓存旧图标，退出桌面重进或重启手机刷新。
+
+## 本版验证记录
+
+[构建 40462478842](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40462478842)：编译、lint 和自动化检查通过。已从构建产物验证五档桌面 PNG 和独立通知图标存在。
+
+APK SHA-256：`457bff3df98f1b4b0954dfc1eae24ed7e23e61f0ebeffb13923214b56c19c2fc`。
+
+1.1.1 与此前提供的 1.1.0 测试 APK 签名公钥不同；升级须先备份录像及记录路径，再卸载旧版安装，应用专用目录卸载会删除。

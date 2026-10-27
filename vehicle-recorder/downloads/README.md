@@ -1,19 +1,22 @@
 # 行车记录仪测试安装包
 
-## 最新版 1.1.0
+## 最新版 1.1.1
 
-[下载 vehicle-recorder-1.1.0-debug.apk](./vehicle-recorder-1.1.0-debug.apk?raw=true)
+<img src="../docs/assets/vehicle-recorder-logo.png" alt="行车记录仪图标" width="96" />
 
-GPU 直接预览、录制中设置、启动自动录像、中文日期文件名、全新 UI 和录像库。对应源码提交：7d21f135385c5ee6830e15fa109be0cf0a66c35e。
+[下载 vehicle-recorder-1.1.1-debug.apk](./vehicle-recorder-1.1.1-debug.apk?raw=true)
 
-[开发文档](../docs/DEVELOPMENT.md) · [更新记录](../docs/CHANGELOG.md) · [使用说明](../README.md)
+本版更新桌面、主界面与通知栏图标，录像功能保持 1.1.0。APK 编译和 Android lint 通过，已验证安装包包含五档桌面 PNG 和通知图标。
 
-编译、Android lint 及自动化检查均已通过；本版仍待 R7sm 真机回归。新旧测试包签名已核对不同，不能覆盖安装：请先备份录像并记录目标路径，再卸载 1.0.0 安装新版。应用专用目录随卸载删除。重选原共享目录后可管理旧视频。
+[图标设计与源文件](../docs/ICON_DESIGN.md) · [使用说明](../README.md) · [开发文档](../docs/DEVELOPMENT.md) · [更新记录](../docs/CHANGELOG.md)
 
-SHA-256：d57922acc4860cccfdaf6a6f5ace803407f08b1b036494e3fe9b3dc4e89689e2，亦见 SHA256SUMS。
+**已核对：1.1.1 与此前提供的 1.1.0 测试包签名不同，不能直接覆盖安装。先备份录像并记录路径，再卸载旧版安装；应用专用目录随卸载删除。**
+
+SHA-256：457bff3df98f1b4b0954dfc1eae24ed7e23e61f0ebeffb13923214b56c19c2fc，亦见 SHA256SUMS。
 
 ## 历史版
 
-[1.0.0](./vehicle-recorder-1.0.0-debug.apk?raw=true)
+- [1.1.0](./vehicle-recorder-1.1.0-debug.apk?raw=true)
+- [1.0.0](./vehicle-recorder-1.0.0-debug.apk?raw=true)
 
-Debug 包仅供测试；正式分发应使用自行长期保存的 release 签名。
+Debug 包仅供测试，正式分发请使用长期保存的 release 签名。
