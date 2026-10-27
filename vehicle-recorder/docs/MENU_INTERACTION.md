@@ -43,3 +43,7 @@
 4. 动画中旋转界面、返回或熄屏后再进入，按钮位置和缩放正常。
 5. 开启系统省电模式或关闭动画后，菜单正常操作，动效不播放。
 6. 8 秒无触摸自动收起、读屏描述及前置竖屏预览修复继续正常。
+
+## 交付验证
+
+[GitHub Actions 40466941601](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40466941601)：编译、Android lint 和现有自动化检查通过。已核对构建 APK 中包含齿轮与关闭矢量资源。源码提交为 f5c5555049ec65598036c6f101e4d1c082c6cb1f。实际按钮动画及功耗仍待 R7sm 真机验证。

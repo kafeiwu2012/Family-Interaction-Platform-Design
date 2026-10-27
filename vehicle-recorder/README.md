@@ -59,6 +59,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 - [开发文档：架构、卡顿原因、设置事务、命名、构建及真机验收](docs/DEVELOPMENT.md)
 - [横竖屏、全屏与折叠菜单](docs/DISPLAY_MODES.md)
+- [菜单图标与轻量点击反馈](docs/MENU_INTERACTION.md)
 - [更新记录](docs/CHANGELOG.md)
 
 本地检查覆盖循环删除和保护、配额/物理空间失败处理、文件命名和碰撞、旧格式兼容、设置应用策略、Java 语法和 XML。完整 API 兼容性以 Android 编译和 lint 为准；硬件帧率、发热及 ColorOS 后台行为须在 R7sm 真机验收。

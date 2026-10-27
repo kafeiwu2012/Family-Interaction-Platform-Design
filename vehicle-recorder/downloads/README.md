@@ -1,24 +1,28 @@
 # 行车记录仪测试安装包
 
-## 最新版 1.2.1
+## 最新版 1.2.2
 
-[下载 vehicle-recorder-1.2.1-debug.apk](./vehicle-recorder-1.2.1-debug.apk?raw=true)
+[下载 vehicle-recorder-1.2.2-debug.apk](./vehicle-recorder-1.2.2-debug.apk?raw=true)
 
-修复前置摄像头竖屏预览倒置：前置预览独立做方向镜像补偿，不再复用 MP4 方向元数据角度。保留前置横屏、后置显示及原录像方向计算。
+- 菜单入口改为圆圈内居中的齿轮，展开时显示关闭图标，保留 52dp 点击区域和中文读屏描述。
+- 点击时按钮轻微上浮并放大后恢复，默认动画时间合计约 240ms；无循环动效，不对相机画面加动画。
+- 系统省电模式或关闭动画时跳过，连续点击、切屏或熄屏时取消复位。仍有少量瞬时渲染开销，不承诺零功耗。
+- 保留 1.2.1 前置竖屏预览方向修复及全部录像功能。
 
-安装后将“方向校正”先设为 0°，分别检查前置横/竖屏预览，再回放一段新保存的视频。编译、Android lint 及自动化回归测试已通过，R7sm 真机效果仍待验证。
+[菜单交互说明](../docs/MENU_INTERACTION.md) · [使用说明](../README.md) · [更新记录](../docs/CHANGELOG.md) · [构建记录](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40466941601)
 
-[显示模式与修复说明](../docs/DISPLAY_MODES.md) · [使用说明](../README.md) · [更新记录](../docs/CHANGELOG.md) · [构建记录](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40465739975)
+编译、Android lint 和现有自动化检查通过，实际交互和功耗表现仍待 R7sm 真机验证。
 
-**已核对：本包与此前提供的 1.2.0 测试签名不同，不能覆盖安装。先备份录像、记录保存路径，再卸载旧版安装；应用专用目录随卸载删除。**
+**本次已核对与此前提供的 1.2.1 测试签名不同。先备份录像、记录保存路径，再卸载旧版安装；应用专用目录随卸载删除。**
 
-SHA-256：`85ce36a013282eccc7d92016a81e8a8f51dd695aebe05f8df6e18f56e52c0c40`，亦见 SHA256SUMS。
+SHA-256：`26369edc3d63ac5e016af3c108ddbc80e82118b4ea1f78f8d05519f489bf5667`，亦见 SHA256SUMS。
 
 ## 历史版
 
+- [1.2.1](./vehicle-recorder-1.2.1-debug.apk?raw=true)
 - [1.2.0](./vehicle-recorder-1.2.0-debug.apk?raw=true)
 - [1.1.1](./vehicle-recorder-1.1.1-debug.apk?raw=true)
 - [1.1.0](./vehicle-recorder-1.1.0-debug.apk?raw=true)
 - [1.0.0](./vehicle-recorder-1.0.0-debug.apk?raw=true)
 
-Debug 包仅供测试，正式分发请自行维护长期 release 签名。
+Debug 包仅供测试；正式分发请自行维护长期 release 签名。
