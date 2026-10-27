@@ -7,7 +7,7 @@ import android.widget.*;
 import android.text.*;
 import android.view.View;
 
-public class MainActivity extends Activity {
+public class MainActivity extends LightActivity {
     EditText url,token,interval,photoWindow,videoSeconds,restSeconds,lensSeconds;
     Spinner storage,task,lens;
     LinearLayout uploadFields,cycleFields,settings;

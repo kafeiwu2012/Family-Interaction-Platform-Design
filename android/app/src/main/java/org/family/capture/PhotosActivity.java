@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.concurrent.*;
 
-public class PhotosActivity extends Activity {
+public class PhotosActivity extends LightActivity {
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private Bitmap shown;
     private int generation;
@@ -52,7 +52,7 @@ public class PhotosActivity extends Activity {
                 row.addView(texts,new LinearLayout.LayoutParams(0,-2,1));
                 CheckBox box=new CheckBox(PhotosActivity.this);box.setContentDescription("选择 "+readable);box.setFocusable(false);box.setChecked(checked.contains(file.getName()));
                 box.setOnCheckedChangeListener((v,on)->{if(on)checked.add(file.getName());else checked.remove(file.getName());updateSelection();});row.addView(box);
-                return row;
+                LightActivity.applyTextColors(row);return row;
             }
         };
         list.setAdapter(adapter);root.addView(list,new LinearLayout.LayoutParams(-1,0,1));updateSelection();

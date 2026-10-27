@@ -1,6 +1,6 @@
 <resources>
     <style name="AppTheme" parent="android:style/Theme.Material.Light">
-        <item name="android:windowBackground">#FAFAFA</item>
+        <item name="android:windowBackground">@drawable/page_background</item>
         <item name="android:colorBackground">#FAFAFA</item>
         <item name="android:textColorPrimary">#212121</item>
         <item name="android:textColorSecondary">#616161</item>

@@ -9,7 +9,7 @@ import android.widget.*;
 import java.io.*;
 
 /** A file descriptor lets the media service read app-private recordings on Android 5.1. */
-public class PlaybackActivity extends Activity implements SurfaceHolder.Callback {
+public class PlaybackActivity extends LightActivity implements SurfaceHolder.Callback {
     private MediaPlayer player;
     private SurfaceView surface;
     private TextView info;
