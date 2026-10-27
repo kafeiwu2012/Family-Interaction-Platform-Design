@@ -17,7 +17,7 @@ public final class ClipsActivity extends Activity {
     private BaseAdapter adapter;
     private int filter;
     private final Button[] tabs=new Button[4];
-    @Override public void onCreate(Bundle b){super.onCreate(b);Ui.fullscreen(this);
+    @Override public void onCreate(Bundle b){super.onCreate(b);setRequestedOrientation("portrait".equals(Config.prefs(this).getString("layout_mode","landscape"))?android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT:android.content.pm.ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);Ui.fullscreen(this);
         LinearLayout root=Ui.column(this);root.setPadding(d(20),d(12),d(20),d(12));root.setBackgroundColor(Ui.BG);setContentView(root);
         LinearLayout header=new LinearLayout(this);header.setGravity(Gravity.CENTER_VERTICAL);root.addView(header,new LinearLayout.LayoutParams(-1,d(42)));
         header.addView(Ui.heading(this,"录像库"),new LinearLayout.LayoutParams(0,-1,1));header.addView(Ui.button(this,"返回预览",Ui.GREEN,this::finish),new LinearLayout.LayoutParams(d(100),d(34)));

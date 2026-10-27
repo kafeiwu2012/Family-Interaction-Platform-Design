@@ -24,7 +24,7 @@ final class SettingsPanel {
         Spinner quality=select(a,panels[0],"视频清晰度",new String[]{"720p · 推荐","1080p · 高清"},pref.getBoolean("hd",false)?1:0);
         Spinner fps=select(a,panels[0],"录像帧率",new String[]{"30 fps · 流畅","24 fps · 均衡"},pref.getInt("fps",30)==24?1:0);
         Spinner preview=select(a,panels[0],"预览帧率",new String[]{"30 fps · 流畅预览","15 fps · 节能预览"},pref.getInt("preview_fps",30)==15?1:0);
-        Spinner rotation=select(a,panels[0],"安装方向",new String[]{"0°","90°","180°","270°"},pref.getInt("rotation",0)/90);
+        Spinner rotation=select(a,panels[0],"方向校正",new String[]{"0°","90°","180°","270°"},pref.getInt("rotation",0)/90);
         Switch audio=toggle(a,panels[0],"同步录音",pref.getBoolean("audio",true));
         Switch stabilize=toggle(a,panels[0],"电子防抖 · 硬件支持时生效",pref.getBoolean("stabilize",true));
         Switch torch=toggle(a,panels[0],"后置常亮补光",pref.getBoolean("torch",false));
@@ -36,8 +36,9 @@ final class SettingsPanel {
         section(a,panels[1],"清晰文件名","后摄像头_20261027_131205_123.mp4\n前摄像头_20261027_131505_456.mp4\n使用手机本地日期时间；旧版本文件继续可播放和循环管理。");
         section(a,panels[2],"启动与后台","自动录像仅在打开软件时触发，手动停止后不会因返回主界面再次启动。");
         Switch auto=toggle(a,panels[2],"打开软件自动开始录像",pref.getBoolean("auto_start",true));
+        section(a,panels[2],"横竖屏与全屏","默认横屏，可在主界面菜单手动切换为竖屏。选择会被记住，不随手机晃动自动旋转。菜单 8 秒无操作自动收起，右上角醒目标记可随时展开。默认预览铺满，可能裁切边缘；可切为完整画面，录像保留完整画幅。切换横竖屏会保存当前片段后继续。方向异常时在录像画质中设置校正角度。 ");
         section(a,panels[2],"熄屏持续录制","请在 ColorOS 中允许后台运行及自启动，并锁定最近任务。按电源键熄屏后继续录制；暗屏按钮只降低亮度。");
-        section(a,panels[2],"版本 1.1.1","GPU 直接预览 · 无位图回读\n建议先录制 1 分钟并回放，确认画面方向、声音和流畅度。");
+        section(a,panels[2],"版本 1.2.0","GPU 直接预览 · 无位图回读\n建议先录制 1 分钟并回放，确认画面方向、声音和流畅度。");
         LinearLayout actions=new LinearLayout(a);LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,d(a,42));ap.setMargins(0,d(a,10),0,0);root.addView(actions,ap);
         Button cancel=Ui.button(a,"取消",Ui.MUTED,dialog::dismiss);actions.addView(cancel,new LinearLayout.LayoutParams(0,-1,1));
         Button save=Ui.button(a,"保存并应用",Ui.GREEN,()->{});LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,-1,2);sp.setMargins(d(a,8),0,0,0);actions.addView(save,sp);
@@ -61,7 +62,7 @@ final class SettingsPanel {
                 }catch(Exception e){a.runOnUiThread(()->{if(dialog.isShowing()){save.setEnabled(true);save.setText("保存并应用");Ui.toast(a,"无法保存："+e.getMessage());}});}
             },"validate-storage").start();
         });
-        dialog.setContentView(root);dialog.show();Window w=dialog.getWindow();if(w!=null){w.setBackgroundDrawableResource(android.R.color.transparent);w.setLayout(Math.min(a.getResources().getDisplayMetrics().widthPixels,d(a,560)),-1);w.setGravity(Gravity.END);w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
+        dialog.setContentView(root);dialog.show();Window w=dialog.getWindow();if(w!=null){w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);w.setBackgroundDrawableResource(android.R.color.transparent);w.setLayout(Math.min(a.getResources().getDisplayMetrics().widthPixels,d(a,560)),-1);w.setGravity(Gravity.END);w.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN|View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);}
     }
     private static int d(Activity a,int n){return Ui.dp(a,n);}
     private static void section(Activity a,LinearLayout p,String title,String detail){TextView h=Ui.heading(a,title);h.setPadding(0,d(a,12),0,d(a,4));p.addView(h);TextView t=Ui.text(a,detail,11,Ui.MUTED);t.setPadding(0,0,0,d(a,10));p.addView(t);}

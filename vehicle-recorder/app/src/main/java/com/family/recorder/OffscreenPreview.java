@@ -18,7 +18,7 @@ final class OffscreenPreview {
     private Surface output;
     private int width,height,inputWidth,inputHeight,rotation,fps;
     private long last;
-    private boolean closed;
+    private boolean closed,fill=true;
     private final float[] texMatrix=new float[16],viewMatrix=new float[16];
     private final FloatBuffer vertices=ByteBuffer.allocateDirect(64).order(ByteOrder.nativeOrder()).asFloatBuffer();
     OffscreenPreview(Handler handler,int w,int h,int angle,int previewFps) {
@@ -63,6 +63,11 @@ final class OffscreenPreview {
             }catch(RuntimeException e){try{if(!closed)setOutput(null,0,0);}catch(RuntimeException ignored){}} // A destroyed UI surface must not stop the video encoder.
         },handler);
     }
+    void setStyle(int angle,boolean crop){rotation=angle;fill=crop;updateProjection();}
+    private void updateProjection(){
+        float[] scale=OrientationMath.scale(inputWidth,inputHeight,rotation,width,height,fill);
+        Matrix.setIdentityM(viewMatrix,0);Matrix.scaleM(viewMatrix,0,scale[0],scale[1],1);Matrix.rotateM(viewMatrix,0,-rotation,0,0,1);
+    }
     void setFrameRate(int value){fps=value==15?15:30;}
     void setOutput(Surface surface,int w,int h){
         makeDrain();if(window!=EGL14.EGL_NO_SURFACE){EGL14.eglDestroySurface(display,window);window=EGL14.EGL_NO_SURFACE;}output=surface;
@@ -71,9 +76,7 @@ final class OffscreenPreview {
         try{window=EGL14.eglCreateWindowSurface(display,config,output,new int[]{EGL14.EGL_NONE},0);}catch(RuntimeException e){window=EGL14.EGL_NO_SURFACE;return;}
         if(window==EGL14.EGL_NO_SURFACE)return;
         EGL14.eglMakeCurrent(display,window,window,context);EGL14.eglSwapInterval(display,0);
-        float aspect=inputWidth/(float)inputHeight;boolean quarter=rotation%180!=0;float rotated=quarter?1/aspect:aspect;float target=w/(float)h;
-        Matrix.setIdentityM(viewMatrix,0);Matrix.scaleM(viewMatrix,0,rotated>target?1:rotated/target,rotated>target?target/rotated:1,1);
-        Matrix.rotateM(viewMatrix,0,-rotation,0,0,1);
+        updateProjection();
         makeDrain();
     }
     private void makeDrain(){if(!EGL14.eglMakeCurrent(display,drain,drain,context))throw new IllegalStateException("预览上下文不可用");}

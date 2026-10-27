@@ -18,6 +18,15 @@ public final class RecorderService extends Service {
     static volatile boolean active;
     static volatile String currentName="", format="720p", previewMode="GPU";
     private static volatile RecorderService instance;
+    private static volatile int displayDegrees=90;
+    static void setDisplayRotation(int degrees){
+        int next=OrientationMath.normalize(degrees);if(next==displayDegrees)return;displayDegrees=next;
+        RecorderService service=instance;if(service!=null)service.work.post(()->{
+            service.work.removeCallbacks(service.reorient);
+            if(service.running)service.work.postDelayed(service.reorient,500);
+        });
+    }
+    static void refreshPreviewStyle(){RecorderService service=instance;if(service!=null)service.work.post(()->{if(service.preview!=null)service.preview.setStyle(service.clipRotation,Config.prefs(service).getBoolean("preview_fill",true));});}
     private static Surface displaySurface;
     private static int displayWidth,displayHeight;
     static synchronized void setPreviewSurface(Surface surface,int width,int height){
@@ -39,13 +48,20 @@ public final class RecorderService extends Service {
     private File current;
     private boolean running;
     private long generation;
-    private int facing;
+    private int facing,sensorRotation,clipRotation;
     private File recordingDirectory;
     private String saveWarning;
     private final Runnable diskGuard=new Runnable(){public void run(){
         if(!running)return;
         if(recordingDirectory.getUsableSpace()<16L*1024*1024){shutdown("存储剩余不足 16 MB，已停止并保存");return;}
         work.postDelayed(this,2000);
+    }};
+    private int desiredRotation(){return OrientationMath.rotation(sensorRotation,facing==Camera.CameraInfo.CAMERA_FACING_FRONT,displayDegrees,Config.prefs(this).getInt("rotation",0));}
+    private final Runnable reorient=new Runnable(){public void run(){
+        if(!running||desiredRotation()==clipRotation)return;
+        long remaining=1500-(SystemClock.elapsedRealtime()-started);
+        if(remaining>0){work.postDelayed(this,remaining);return;}
+        finishClip();beginClip();
     }};
     private final Runnable rotate=() -> { if(running) { finishClip(); beginClip(); } };
     @Override public void onCreate() {
@@ -98,7 +114,7 @@ public final class RecorderService extends Service {
             Camera.CameraInfo info=new Camera.CameraInfo();
             for(int i=0;i<Camera.getNumberOfCameras();i++){Camera.getCameraInfo(i,info);if(info.facing==facing){selected=i;break;}}
             if(selected<0)throw new IOException("没有可用的目标摄像头");
-            camera=Camera.open(selected);Camera.getCameraInfo(selected,info);
+            camera=Camera.open(selected);Camera.getCameraInfo(selected,info);sensorRotation=info.orientation;clipRotation=desiredRotation();
             camera.setErrorCallback((error,c)-> work.post(()->{if(generation==clipGeneration)shutdown("摄像头异常："+error);}));
             Camera.Parameters p=camera.getParameters();
             if(p.getSupportedFocusModes()!=null && p.getSupportedFocusModes().contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) p.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
@@ -118,7 +134,8 @@ public final class RecorderService extends Service {
             }
             if(range!=null)p.setPreviewFpsRange(range[0],range[1]);
             p.setRecordingHint(true);camera.setParameters(p);
-            preview=new OffscreenPreview(work,best.width,best.height,Config.prefs(this).getInt("rotation",0),Config.prefs(this).getInt("preview_fps",30));
+            preview=new OffscreenPreview(work,best.width,best.height,clipRotation,Config.prefs(this).getInt("preview_fps",30));
+            preview.setStyle(clipRotation,Config.prefs(this).getBoolean("preview_fill",true));
             preview.setOutput(displaySurface,displayWidth,displayHeight);
             camera.setPreviewTexture(preview.input);camera.startPreview();camera.unlock();
             recorder=new MediaRecorder();recorder.setCamera(camera);
@@ -128,8 +145,8 @@ public final class RecorderService extends Service {
             recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);recorder.setVideoSize(profile.videoFrameWidth,profile.videoFrameHeight);
             recorder.setVideoFrameRate(fps);recorder.setVideoEncodingBitRate(Config.bitrate(this));
             if(audio){recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);recorder.setAudioSamplingRate(44100);recorder.setAudioChannels(1);recorder.setAudioEncodingBitRate(96000);}
-            // Physical mount orientation is explicit; preview and the saved video have the same rotation.
-            int rotation=Config.prefs(this).getInt("rotation",0);recorder.setOrientationHint(rotation);
+            // Rotation is immutable within an MP4 segment; manual display changes start a new segment.
+            recorder.setOrientationHint(clipRotation);
             current=ClipNames.next(dir,facing==Camera.CameraInfo.CAMERA_FACING_FRONT,System.currentTimeMillis());
             currentName=current.getName().replace(".part",".mp4");
             recorder.setOutputFile(current.getAbsolutePath());recorder.setMaxDuration(Config.seconds(this)*1000);
@@ -137,13 +154,13 @@ public final class RecorderService extends Service {
             recorder.setOnInfoListener((m,what,extra)->{if(what==MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED || what==MediaRecorder.MEDIA_RECORDER_INFO_MAX_FILESIZE_REACHED)work.post(()->{if(running && generation==clipGeneration)rotate.run();});});
             recorder.setOnErrorListener((m,what,extra)->work.post(()->{if(generation==clipGeneration)shutdown("编码异常："+what);}));
             recorder.prepare();recorder.start();recording=true;protectedClip=false;started=SystemClock.elapsedRealtime();
-            format=profile.videoFrameWidth+"×"+profile.videoFrameHeight+" / "+fps+"fps";
+            format=(clipRotation%180==0?profile.videoFrameWidth:profile.videoFrameHeight)+"×"+(clipRotation%180==0?profile.videoFrameHeight:profile.videoFrameWidth)+" / "+fps+"fps";
             status="录像中 · "+(facing==0?"后摄像头":"前摄像头");
             work.postDelayed(rotate,Config.seconds(this)*1000L+1000);work.removeCallbacks(diskGuard);work.postDelayed(diskGuard,2000);
         } catch(Exception e){shutdown("录制停止："+e.getMessage());}
     }
     private void finishClip() {
-        saveWarning=null; generation++; work.removeCallbacks(diskGuard); work.removeCallbacks(rotate); boolean valid=false;
+        saveWarning=null; generation++; work.removeCallbacks(reorient); work.removeCallbacks(diskGuard); work.removeCallbacks(rotate); boolean valid=false;
         if(recorder!=null){recorder.setOnInfoListener(null);recorder.setOnErrorListener(null);try{recorder.stop();valid=true;}catch(RuntimeException e){status=saveWarning="片段过短或编码失败，当前片段未保存";}recorder.release();recorder=null;}
         if(camera!=null){try{camera.reconnect();camera.stopPreview();}catch(Exception ignored){}camera.release();camera=null;}
         if(preview!=null){preview.close();preview=null;}
