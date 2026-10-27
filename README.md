@@ -16,3 +16,7 @@ Android 5.1.1 / API 22 定时拍照 → HTTPS → 树莓派 3B（或 Linux 云�
 运行测试：`cd server && python3 -m unittest -v`
 
 测试 APK：[下载 v0.1.0 debug](downloads/family-capture-0.1.0-debug.apk) · [SHA256](downloads/SHA256SUMS)。
+
+## v0.2.0 本地测试
+
+[下载本地测试版 APK](downloads/family-capture-0.2.0-debug.apk)。勾选“本地测试”，无需填写服务地址/令牌，即可定时拍照、切换前后摄，并在应用内查看和删除测试照片。无需连接 iPhone 热点。照片存于应用私有目录，与补传队列分开，不自动上传；约256MiB上限。更改模式/间隔须先停止再启动。真机熄屏行为尚待测试。
