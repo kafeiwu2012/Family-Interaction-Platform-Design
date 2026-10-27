@@ -1,5 +1,7 @@
 # 构建与部署
 
+项目现位于仓库子目录 `android-family-capture/`。以下相对路径命令均从该子目录执行，先在仓库根目录运行 `cd android-family-capture`。Android Studio 应打开该目录中的 `android/` 工程。
+
 ## Android
 
 安装 Android Studio、JDK 17、Android SDK Platform 35 / Build Tools 35.0.0。工程使用 AGP 8.7.3，提供 Gradle 8.9 wrapper；Gradle 是构建工具，不是手机端依赖。SDK 35 编译不改变最低 API 22。
@@ -16,7 +18,7 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ## 树莓派 3B / 云主机
 
-推荐 Raspberry Pi OS Bullseye/Bookworm，Python >=3.7，无 pip 依赖。先确认系统时间准确、持久磁盘容量充足。以下以源码位于 `/opt/family-capture` 为例：
+推荐 Raspberry Pi OS Bullseye/Bookworm，Python >=3.7，无 pip 依赖。先确认系统时间准确、持久磁盘容量充足。以下以整个仓库克隆到 `/opt/family-capture`、当前目录为 `/opt/family-capture/android-family-capture` 为例：
 
 ```sh
 sudo useradd --system --home /var/lib/family-capture --shell /usr/sbin/nologin familycapture

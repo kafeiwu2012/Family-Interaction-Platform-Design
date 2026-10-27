@@ -1,7 +1,1 @@
-.gradle/
-**/build/
-local.properties
-__pycache__/
-*.db
-server/data/
 .env

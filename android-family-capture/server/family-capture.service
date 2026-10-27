@@ -4,9 +4,9 @@ After=network.target
 [Service]
 User=familycapture
 Group=familycapture
-WorkingDirectory=/opt/family-capture/server
+WorkingDirectory=/opt/family-capture/android-family-capture/server
 EnvironmentFile=/etc/family-capture.env
-ExecStart=/usr/bin/python3 /opt/family-capture/server/server.py
+ExecStart=/usr/bin/python3 /opt/family-capture/android-family-capture/server/server.py
 Restart=on-failure
 UMask=0077
 NoNewPrivileges=true
