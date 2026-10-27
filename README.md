@@ -24,6 +24,9 @@
 ## 家庭影像采集
 
 - [最新测试 APK（v0.4.2）](android-family-capture/downloads/family-capture-0.4.2-debug.apk)
+- [开发指南：构建环境、代码修改、测试与 CI](android-family-capture/docs/DEVELOPMENT.md)
+- [模块架构：拍摄流程、录像、镜头交替及存储](android-family-capture/docs/ARCHITECTURE.md)
+- [服务端接口：认证、远程配置、照片上传与状态](android-family-capture/docs/API.md)
 - [部署说明](android-family-capture/docs/DEPLOY.md)
 - [真机测试步骤](android-family-capture/docs/DEVICE-TEST.md)
 
