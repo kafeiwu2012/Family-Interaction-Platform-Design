@@ -40,6 +40,7 @@ public final class MainActivity extends Activity implements TextureView.SurfaceT
         FrameLayout root=new FrameLayout(this);root.setBackgroundColor(Ui.BG);setContentView(root);
         video=new TextureView(this);video.setSurfaceTextureListener(this);root.addView(video,new FrameLayout.LayoutParams(-1,-1));
         LinearLayout top=new LinearLayout(this);top.setGravity(Gravity.CENTER_VERTICAL);top.setPadding(d(18),d(10),d(18),d(10));top.setBackground(Ui.shape(0xD90B1220,0));root.addView(top,new FrameLayout.LayoutParams(-1,d(58),Gravity.TOP));
+        ImageView mark=new ImageView(this);mark.setImageResource(R.mipmap.ic_launcher);LinearLayout.LayoutParams mp=new LinearLayout.LayoutParams(d(36),d(36));mp.setMargins(0,0,d(10),0);top.addView(mark,mp);
         LinearLayout brand=Ui.column(this);top.addView(brand,new LinearLayout.LayoutParams(0,-1,1));brand.addView(Ui.heading(this,"行车记录仪"));brand.addView(Ui.text(this,"ROAD RECORDER  /  R7sm",10,Ui.MUTED));
         LinearLayout info=Ui.column(this);info.setGravity(Gravity.END);top.addView(info);clock=Ui.text(this,"",14,Ui.TEXT);info.addView(clock);format=Ui.text(this,"GPU 实时预览",11,Ui.GREEN);info.addView(format);
         LinearLayout hud=new LinearLayout(this);hud.setGravity(Gravity.CENTER_VERTICAL);hud.setPadding(d(12),d(6),d(12),d(6));hud.setBackground(Ui.shape(0xBD0B1220,d(12)));FrameLayout.LayoutParams hp=new FrameLayout.LayoutParams(-2,d(38),Gravity.TOP|Gravity.START);hp.setMargins(d(18),d(72),d(120),0);root.addView(hud,hp);

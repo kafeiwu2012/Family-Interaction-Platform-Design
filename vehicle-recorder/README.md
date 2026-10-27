@@ -1,4 +1,8 @@
-# OPPO R7sm 行车记录仪 · 1.1.0
+# OPPO R7sm 行车记录仪 · 1.1.1
+
+<img src="docs/assets/vehicle-recorder-logo.png" alt="行车记录仪图标" width="96" />
+
+1.1.1 更新桌面、应用内和通知栏图标；录制功能沿用 1.1.0。
 
 原生 Android 应用，最低 Android 5.0 / API 21，面向 OPPO R7sm 的旧版 ColorOS。与仓库的家庭采集应用独立安装。新版依据用户的 1.0.0 真机反馈改进；1.1.0 的流畅度、熄屏及长时间稳定性仍需在手机上回归验证。
 

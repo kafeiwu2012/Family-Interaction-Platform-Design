@@ -37,7 +37,7 @@ final class SettingsPanel {
         section(a,panels[2],"启动与后台","自动录像仅在打开软件时触发，手动停止后不会因返回主界面再次启动。");
         Switch auto=toggle(a,panels[2],"打开软件自动开始录像",pref.getBoolean("auto_start",true));
         section(a,panels[2],"熄屏持续录制","请在 ColorOS 中允许后台运行及自启动，并锁定最近任务。按电源键熄屏后继续录制；暗屏按钮只降低亮度。");
-        section(a,panels[2],"版本 1.1.0","GPU 直接预览 · 无位图回读\n建议先录制 1 分钟并回放，确认画面方向、声音和流畅度。");
+        section(a,panels[2],"版本 1.1.1","GPU 直接预览 · 无位图回读\n建议先录制 1 分钟并回放，确认画面方向、声音和流畅度。");
         LinearLayout actions=new LinearLayout(a);LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,d(a,42));ap.setMargins(0,d(a,10),0,0);root.addView(actions,ap);
         Button cancel=Ui.button(a,"取消",Ui.MUTED,dialog::dismiss);actions.addView(cancel,new LinearLayout.LayoutParams(0,-1,1));
         Button save=Ui.button(a,"保存并应用",Ui.GREEN,()->{});LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,-1,2);sp.setMargins(d(a,8),0,0,0);actions.addView(save,sp);

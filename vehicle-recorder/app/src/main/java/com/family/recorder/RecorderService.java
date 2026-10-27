@@ -86,7 +86,7 @@ public final class RecorderService extends Service {
         PendingIntent open=PendingIntent.getActivity(this,0,new Intent(this,MainActivity.class),PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         PendingIntent end=PendingIntent.getService(this,1,stop,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder b=Build.VERSION.SDK_INT>=26?new Notification.Builder(this,"recording"):new Notification.Builder(this);
-        return b.setSmallIcon(android.R.drawable.presence_video_online).setContentTitle("行车记录仪正在运行").setContentText("熄屏后继续录像 · 点击返回").setContentIntent(open).setOngoing(true).addAction(android.R.drawable.ic_media_pause,"停止并保存",end).build();
+        return b.setSmallIcon(R.drawable.ic_stat_recorder).setContentTitle("行车记录仪正在运行").setContentText("熄屏后继续录像 · 点击返回").setContentIntent(open).setOngoing(true).addAction(android.R.drawable.ic_media_pause,"停止并保存",end).build();
     }
     private void beginClip() {
         if(!running)return;
