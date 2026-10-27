@@ -29,6 +29,7 @@ public final class RecorderService extends Service {
     private long generation;
     private int facing;
     private long lastName;
+    private String saveWarning;
     private final Runnable diskGuard=new Runnable(){public void run(){
         if(!running)return;
         if(Config.directory(RecorderService.this).getUsableSpace()<16L*1024*1024){shutdown("存储剩余不足 16 MB，已停止并保存");return;}
@@ -47,7 +48,7 @@ public final class RecorderService extends Service {
         work.post(() -> {
             if("start".equals(action) && !running) {
                 running=true; facing=Config.prefs(this).getInt("facing",Camera.CameraInfo.CAMERA_FACING_BACK);wake.acquire();beginClip();
-            } else if("stop".equals(action)) shutdown("已停止 · 录像已保存");
+            } else if("stop".equals(action)) shutdown("已停止");
             else if("switch".equals(action) && running) {
                 facing=facing==0?1:0; finishClip(); beginClip();
             } else if("lock".equals(action) && current!=null) {
@@ -110,8 +111,8 @@ public final class RecorderService extends Service {
         } catch(Exception e){shutdown("录制停止："+e.getMessage());}
     }
     private void finishClip() {
-        generation++; work.removeCallbacks(diskGuard); work.removeCallbacks(rotate); boolean valid=false;
-        if(recorder!=null){recorder.setOnInfoListener(null);recorder.setOnErrorListener(null);try{recorder.stop();valid=true;}catch(RuntimeException e){status="片段过短或编码失败";}recorder.release();recorder=null;}
+        saveWarning=null; generation++; work.removeCallbacks(diskGuard); work.removeCallbacks(rotate); boolean valid=false;
+        if(recorder!=null){recorder.setOnInfoListener(null);recorder.setOnErrorListener(null);try{recorder.stop();valid=true;}catch(RuntimeException e){status=saveWarning="片段过短或编码失败，当前片段未保存";}recorder.release();recorder=null;}
         if(camera!=null){try{camera.reconnect();camera.stopPreview();}catch(Exception ignored){}camera.release();camera=null;}
         if(preview!=null){preview.close();preview=null;}
         if(current!=null){
@@ -122,12 +123,12 @@ public final class RecorderService extends Service {
             if(safe && current.renameTo(dest)){
                 marker.delete();
                 MediaScannerConnection.scanFile(this,new String[]{dest.getPath()},new String[]{"video/mp4"},null);
-            }else status="保存重命名失败，原片段及锁标记保留";
+            }else status=saveWarning="保存重命名失败，原片段及锁标记保留";
             }else{current.delete();marker.delete();}current=null;
         }
         recording=false;protectedClip=false;frame=null;
     }
-    private void shutdown(String message){running=false;finishClip();status=message;if(wake.isHeld())wake.release();stopForeground(true);stopSelf();}
+    private void shutdown(String message){running=false;finishClip();status=saveWarning==null?message:message+"；"+saveWarning;if(wake.isHeld())wake.release();stopForeground(true);stopSelf();}
     @Override public void onDestroy(){work.post(()->{running=false;finishClip();if(wake.isHeld())wake.release();thread.quitSafely();});super.onDestroy();}
     @Override public IBinder onBind(Intent i){return null;}
 }
