@@ -24,8 +24,9 @@ jobs:
       - run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - run: |
           mkdir -p /tmp/media-tests
-          javac -d /tmp/media-tests android/app/src/main/java/org/family/capture/MediaNames.java android/app/src/main/java/org/family/capture/MediaArchive.java tests/java/org/family/capture/MediaArchiveTest.java
+          javac -d /tmp/media-tests android/app/src/main/java/org/family/capture/MediaNames.java android/app/src/main/java/org/family/capture/MediaArchive.java tests/java/org/family/capture/MediaArchiveTest.java android/app/src/main/java/org/family/capture/LensSchedule.java tests/java/org/family/capture/LensScheduleTest.java
           java -cp /tmp/media-tests org.family.capture.MediaArchiveTest
+          java -cp /tmp/media-tests org.family.capture.LensScheduleTest
       - run: gradle --no-daemon assembleDebug lint
         working-directory: android
       - uses: actions/upload-artifact@v4

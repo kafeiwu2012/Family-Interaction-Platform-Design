@@ -24,7 +24,7 @@ final class CameraEngine {
     private int generation=0;
     CameraEngine(Context c, Handler h) { context=c; handler=h; }
     static String report(Context c) {
-        StringBuilder out=new StringBuilder("API 22 无标准双摄并发查询接口；并发能力需实际诊断，正常拍摄仍串行。\n");
+        StringBuilder out=new StringBuilder("本版仅允许一个摄像头工作；支持按时间串行交替，已移除双摄并发。\n");
         try {
             CameraManager m=(CameraManager)c.getSystemService(Context.CAMERA_SERVICE);
             for(String id:m.getCameraIdList()) {
@@ -37,9 +37,7 @@ final class CameraEngine {
         } catch(Exception e) { out.append(e.getClass().getSimpleName()); }
         return out.toString();
     }
-    interface Gate { void ready(Runnable capture); }
-    void capture(String facing, File output, Result callback) { capture(facing,output,callback,null); }
-    void capture(String facing, File output, Result callback, Gate gate) {
+    void capture(String facing, File output, Result callback) {
         if(!completed.get()) { callback.done(false,"camera busy"); return; }
         completed=new AtomicBoolean(false); result=callback;
         final int attempt=++generation;
@@ -88,7 +86,7 @@ final class CameraEngine {
                                     Runnable shoot=()->{if(attempt!=generation||completed.get())return;try{s.capture(b.build(),new CameraCaptureSession.CaptureCallback(){
                                         @Override public void onCaptureFailed(CameraCaptureSession s,CaptureRequest r,CaptureFailure f) { if(attempt==generation) finish(false,"capture failed"); }
                                     },handler);}catch(Exception e){finish(false,e.toString());}};
-                                    if(gate==null)shoot.run();else gate.ready(shoot);
+                                    shoot.run();
                                 } catch(Exception e) { finish(false,e.getClass().getSimpleName()); }
                             }
                             @Override public void onConfigureFailed(CameraCaptureSession s) { s.close(); if(attempt==generation) finish(false,"session failed"); }

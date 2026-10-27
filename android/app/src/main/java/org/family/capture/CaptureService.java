@@ -15,6 +15,8 @@ public class CaptureService extends Service {
     private CameraEngine camera;
     private VideoEngine video;
     private boolean busy, cycle;
+    private LensSchedule lenses;
+    private long hardwareReadyAt;
     private int photoWindow,videoSeconds,restSeconds;
     private long phaseUntil;
     private String phase="photo";
@@ -40,20 +42,32 @@ public class CaptureService extends Service {
         if(intent!=null && "STOP".equals(intent.getAction())) { stopSelf(); return START_NOT_STICKY; }
         if(running) return START_NOT_STICKY;
         SharedPreferences p=getSharedPreferences("config",0); base=p.getString("url",""); token=p.getString("token",""); seconds=p.getInt("interval",60);
-        localMode=p.getBoolean("local",true);
+        boolean singleVideo=intent!=null&&"VIDEO_TEST".equals(intent.getAction());
+        localMode=singleVideo||p.getBoolean("local",true);
         facing=p.getString("facing","back");
+        lenses=new LensSchedule(facing,localMode&&p.getBoolean("alternate",false),Math.max(10,Math.min(86400,p.getInt("lensSeconds",60))),SystemClock.elapsedRealtime());
         queue=new File(getFilesDir(),localMode?"local-photos":"queue"); queue.mkdirs();
         File[] stale=queue.listFiles((d,n)->n.endsWith(".part"));if(stale!=null)for(File f:stale)f.delete();
-        cycle=localMode && p.getBoolean("cycle",false);
+        cycle=!singleVideo && localMode && p.getBoolean("cycle",false);
         photoWindow=Math.max(10,Math.min(86400,p.getInt("photoWindow",60)));
         videoSeconds=Math.max(2,Math.min(60,p.getInt("videoSeconds",5)));
         restSeconds=Math.max(0,Math.min(86400,p.getInt("restSeconds",10)));
+        getSharedPreferences("runtime",0).edit().putString("videoStatus",cycle?"等待本轮拍照阶段结束后开始录像":"当前方案只拍照").apply();
         phaseUntil=SystemClock.elapsedRealtime()+photoWindow*1000L;
         if(seconds<10 || seconds>86400) seconds=60;
         if(!localMode && (!base.startsWith("https://") || token.length()<32)) { stopSelf(); return START_NOT_STICKY; }
         running=true; startForeground(1,notification("定时相机运行中")); wake.setReferenceCounted(false); wake.acquire(10*60*1000L);
         notifyStatus(localMode?"本地测试已启动，不上传":"上传模式已启动");
-        handler.post(tick); if(!localMode) network.execute(this::networkLoop);
+        if(singleVideo){
+            handler.postDelayed(()->{
+                if(!running)return;
+                if(queue.getUsableSpace()<64L*1024*1024||queuedBytes()>MAX_BYTES){notifyStatus("录像失败 · 本地存储不足");stopSelf();return;}
+                busy=true;notifyStatus("正在测试本地5秒录像 · "+facing);
+                video.record(facing,new File(queue,MediaNames.create(facing,"mp4")),5,(ok,detail)->{
+                    busy=false;notifyStatus((ok?"录像成功 · ":"录像失败 · ")+detail);stopSelf();
+                });
+            },1000);
+        }else{handler.post(tick);if(!localMode)network.execute(this::networkLoop);}
         return START_NOT_STICKY;
     }
     private Notification notification(String text) {
@@ -65,6 +79,7 @@ public class CaptureService extends Service {
     }
     private void notifyStatus(String text) {
         status=text;
+        if(running&&text.startsWith("录像"))getSharedPreferences("runtime",0).edit().putString("videoStatus",text+" · "+new java.text.SimpleDateFormat("HH:mm:ss",java.util.Locale.US).format(new java.util.Date())).apply();
         if(running) getSharedPreferences("runtime",0).edit().putString("status",(localMode?"本地测试 · ":"上传模式 · ")+text+" · "+new java.text.SimpleDateFormat("HH:mm:ss",java.util.Locale.US).format(new java.util.Date())).apply();
         if(running) ((NotificationManager)getSystemService(NOTIFICATION_SERVICE)).notify(1,notification(text));
     }
@@ -73,10 +88,10 @@ public class CaptureService extends Service {
         if(!running) return;
         // Renew a bounded wake lock only while this visible foreground service runs.
         wake.acquire(10*60*1000L);
-        if(localMode) facing=getSharedPreferences("config",0).getString("facing","back");
+        if(localMode&&!busy){facing=lenses.alternate?lenses.next(SystemClock.elapsedRealtime()):getSharedPreferences("config",0).getString("facing","back");}
         long now=SystemClock.elapsedRealtime();
         if(cycle && !busy && "rest".equals(phase) && now>=phaseUntil){phase="photo";phaseUntil=now+photoWindow*1000L;nextCapture=0;}
-        if(cycle && !busy && "photo".equals(phase) && now>=phaseUntil){
+        if(cycle && !busy && now>=hardwareReadyAt && "photo".equals(phase) && now>=phaseUntil){
             phase="video";
             if(queuedBytes()>MAX_BYTES||queue.getUsableSpace()<64L*1024*1024){
                 phase="rest";phaseUntil=now+Math.max(10,restSeconds)*1000L;notifyStatus("空间不足，暂停录像，请清理本地文件");
@@ -84,19 +99,19 @@ public class CaptureService extends Service {
                 busy=true;String selected=facing;
                 notifyStatus("正在录制无声视频 "+selected+" · "+videoSeconds+"秒");
                 video.record(selected,new File(queue,MediaNames.create(selected,"mp4")),videoSeconds,(ok,detail)->{
-                    busy=false;phase="rest";phaseUntil=SystemClock.elapsedRealtime()+restSeconds*1000L;
+                    busy=false;hardwareReadyAt=SystemClock.elapsedRealtime()+1000;phase="rest";phaseUntil=SystemClock.elapsedRealtime()+restSeconds*1000L;
                     notifyStatus((ok?"录像成功 · ":"录像失败 · ")+detail+"；等待下一拍照时段");
                 });
             }
         }
-        if(enabled && !busy && "photo".equals(phase) && now>=nextCapture) {
+        if(enabled && !busy && now>=hardwareReadyAt && "photo".equals(phase) && now< (cycle?phaseUntil:Long.MAX_VALUE) && now>=nextCapture) {
             nextCapture=now+seconds*1000L;
             if(queuedBytes()>MAX_BYTES || queue.getUsableSpace()<32L*1024*1024) notifyStatus(localMode?"本地空间不足，暂停拍摄；请删除测试照片":"存储不足，暂停拍摄；等待上传释放空间");
             else {
                 String selected=facing;
                 File out=new File(queue,MediaNames.create(selected,"jpg"));
                 busy=true;
-                camera.capture(selected,out,(ok,detail)->{busy=false;notifyStatus((ok?(localMode?"已保存本地 ":"已拍摄 "):"拍摄失败 ")+selected+" · "+detail);});
+                camera.capture(selected,out,(ok,detail)->{busy=false;hardwareReadyAt=SystemClock.elapsedRealtime()+1000;notifyStatus((ok?(localMode?"已保存本地 ":"已拍摄 "):"拍摄失败 ")+selected+" · "+detail);});
             }
         }
         handler.postDelayed(this,1000);

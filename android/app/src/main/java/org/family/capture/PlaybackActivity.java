@@ -36,7 +36,7 @@ public class PlaybackActivity extends Activity implements SurfaceHolder.Callback
         if(name==null||!name.equals(new File(name).getName())||!name.endsWith(".mp4")){finish();return;}
         file=new File(new File(getFilesDir(),"local-photos"),name);
         LinearLayout root=new LinearLayout(this);root.setOrientation(LinearLayout.VERTICAL);root.setPadding(12,12,12,12);
-        TextView title=new TextView(this);title.setText(MediaNames.display(file));title.setTextSize(16);root.addView(title);
+        TextView title=new TextView(this);title.setText(MediaNames.display(file));title.setTextSize(12);root.addView(title);
         FrameLayout frame=new FrameLayout(this);frame.setBackgroundColor(android.graphics.Color.BLACK);
         surface=new SurfaceView(this);frame.addView(surface,new FrameLayout.LayoutParams(-1,-1,Gravity.CENTER));
         root.addView(frame,new LinearLayout.LayoutParams(-1,0,1));surface.getHolder().addCallback(this);

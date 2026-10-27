@@ -47,8 +47,8 @@ public class PhotosActivity extends Activity {
                 LinearLayout row=new LinearLayout(PhotosActivity.this);row.setPadding(8,16,8,16);row.setGravity(android.view.Gravity.CENTER_VERTICAL);
                 LinearLayout texts=new LinearLayout(PhotosActivity.this);texts.setOrientation(LinearLayout.VERTICAL);
                 String readable=MediaNames.display(file);boolean front=readable.startsWith("前摄");boolean video=file.getName().endsWith(".mp4");
-                TextView title=new TextView(PhotosActivity.this);title.setText((front?"前摄":"后摄")+" · "+(video?"视频  ▶ 点击播放":"照片 · 点击查看"));title.setTextSize(18);texts.addView(title);
-                TextView detail=new TextView(PhotosActivity.this);detail.setText(readable+"\n大小："+android.text.format.Formatter.formatFileSize(PhotosActivity.this,file.length()));detail.setTextSize(14);detail.setSingleLine(false);detail.setHorizontallyScrolling(false);detail.setEllipsize(null);texts.addView(detail);
+                TextView title=new TextView(PhotosActivity.this);title.setText((front?"前摄":"后摄")+" · "+(video?"视频  ▶ 点击播放":"照片 · 点击查看"));title.setTextSize(14);texts.addView(title);
+                TextView detail=new TextView(PhotosActivity.this);detail.setText(readable+"\n大小："+android.text.format.Formatter.formatFileSize(PhotosActivity.this,file.length()));detail.setTextSize(11);detail.setSingleLine(false);detail.setHorizontallyScrolling(false);detail.setEllipsize(null);texts.addView(detail);
                 row.addView(texts,new LinearLayout.LayoutParams(0,-2,1));
                 CheckBox box=new CheckBox(PhotosActivity.this);box.setContentDescription("选择 "+readable);box.setFocusable(false);box.setChecked(checked.contains(file.getName()));
                 box.setOnCheckedChangeListener((v,on)->{if(on)checked.add(file.getName());else checked.remove(file.getName());updateSelection();});row.addView(box);
