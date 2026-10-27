@@ -25,7 +25,9 @@ public final class ClipsActivity extends Activity {
     private volatile boolean cancelRequested;
     private File sourceRoot;
     private Button multi;
-    private HorizontalScrollView toolbar;
+    private LinearLayout toolbar;
+    private ListView list;
+    private Button selectAll,cancelSelection,exportSelected,shareSelected,deleteSelected;
     private final Button[] tabs=new Button[4];
     private List<File> pendingExport;
     private File pendingRoot;
@@ -44,9 +46,13 @@ public final class ClipsActivity extends Activity {
         capacity=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);capacity.setMax(1000);root.addView(capacity,new LinearLayout.LayoutParams(-1,d(4)));
         LinearLayout filters=new LinearLayout(this);LinearLayout.LayoutParams fp=new LinearLayout.LayoutParams(-1,d(34));fp.setMargins(0,d(5),0,d(5));root.addView(filters,fp);
         String[] names={"全部","已保护","前摄像头","后摄像头"};for(int i=0;i<4;i++){final int index=i;tabs[i]=Ui.button(this,names[i],i==0?Ui.GREEN:Ui.MUTED,()->{if(available()){filter=index;selected.clear();applyFilter();}});LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1);p.setMargins(0,0,d(5),0);filters.addView(tabs[i],p);}
-        toolbar=new HorizontalScrollView(this);toolbar.setHorizontalScrollBarEnabled(true);toolbar.setVisibility(View.GONE);root.addView(toolbar,new LinearLayout.LayoutParams(-1,d(42)));LinearLayout tools=new LinearLayout(this);toolbar.addView(tools);
-        tool(tools,"全选当前",()->{if(available()){selected.addAll(shown);updateSelection();}});tool(tools,"清空",()->{if(available()){selected.clear();updateSelection();}});tool(tools,"导出",()->export(choices()));tool(tools,"分享",()->share(choices()));tool(tools,"删除",()->delete(choices()));
-        FrameLayout body=new FrameLayout(this);root.addView(body,new LinearLayout.LayoutParams(-1,0,1));ListView list=new ListView(this);list.setDivider(new android.graphics.drawable.ColorDrawable(Ui.BG));list.setDividerHeight(d(6));body.addView(list,new FrameLayout.LayoutParams(-1,-1));
+        toolbar=Ui.column(this);toolbar.setVisibility(View.GONE);root.addView(toolbar,new LinearLayout.LayoutParams(-1,-2));
+        LinearLayout tools=toolRow();
+        selectAll=tool(tools,"全选当前",()->{if(available()){selected.addAll(shown);updateSelection();}});
+        deleteSelected=tool(tools,"删除所选",()->delete(choices()));
+        if(getResources().getDisplayMetrics().widthPixels<d(460))tools=toolRow();
+        cancelSelection=tool(tools,"取消选择",this::clearSelected);exportSelected=tool(tools,"导出",()->export(choices()));shareSelected=tool(tools,"分享",()->share(choices()));
+        FrameLayout body=new FrameLayout(this);root.addView(body,new LinearLayout.LayoutParams(-1,0,1));list=new ListView(this);list.setDivider(new android.graphics.drawable.ColorDrawable(Ui.BG));list.setDividerHeight(d(6));body.addView(list,new FrameLayout.LayoutParams(-1,-1));
         empty=Ui.text(this,"暂无已完成的录像\n当前片段保存后显示；可点“目录”查看历史路径",13,Ui.MUTED);empty.setGravity(Gravity.CENTER);body.addView(empty,new FrameLayout.LayoutParams(-1,-1));list.setEmptyView(empty);
         adapter=new BaseAdapter(){public int getCount(){return shown.size();}public Object getItem(int p){return shown.get(p);}public long getItemId(int p){return p;}
             public View getView(int position,View recycled,ViewGroup parent){
@@ -64,11 +70,13 @@ public final class ClipsActivity extends Activity {
     private static final class Row{CheckBox check;TextView icon,title,detail,state;}
     private int d(int value){return Ui.dp(this,value);}
     private Button headerButton(LinearLayout row,String title,Runnable action){Button b=Ui.button(this,title,Ui.GREEN,action);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(d(62),d(32));p.setMargins(d(5),0,0,0);row.addView(b,p);return b;}
-    private void tool(LinearLayout row,String title,Runnable action){Button b=Ui.button(this,title,title.equals("删除")?Ui.RED:Ui.GREEN,action);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(d(76),d(34));p.setMargins(0,0,d(6),0);row.addView(b,p);}
+    private LinearLayout toolRow(){LinearLayout row=new LinearLayout(this);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(-1,d(48));p.setMargins(0,0,0,d(4));toolbar.addView(row,p);return row;}
+    private Button tool(LinearLayout row,String title,Runnable action){Button b=Ui.button(this,title,title.startsWith("删除")?Ui.RED:Ui.GREEN,action);LinearLayout.LayoutParams p=new LinearLayout.LayoutParams(0,-1,1);p.setMargins(0,0,d(5),0);row.addView(b,p);return b;}
+    private void clearSelected(){if(!available())return;int count=selected.size();selected.clear();if(list!=null)list.clearChoices();updateSelection();if(list!=null)list.invalidateViews();Ui.toast(this,"已取消 "+count+" 项选择；录像文件保留");}
     private boolean available(){if(busy){Ui.toast(this,"正在处理，请稍候或取消当前导出");return false;}return true;}
     private static boolean front(File f){return f.getName().startsWith("前摄像头_")||f.getName().matches("VR_[0-9]+_F\\.mp4");}
     private void toggle(File f){if(!selected.remove(f))selected.add(f);updateSelection();}
-    private void updateSelection(){multi.setText(selecting?"完成":"多选");heading.setText(selecting?"已选 "+selected.size():"录像库");toolbar.setVisibility(selecting?View.VISIBLE:View.GONE);if(adapter!=null)adapter.notifyDataSetChanged();}
+    private void updateSelection(){multi.setText(selecting?"完成":"多选");heading.setText(selecting?"已选 "+selected.size():"录像库");toolbar.setVisibility(selecting?View.VISIBLE:View.GONE);boolean hasSelection=!busy&&!selected.isEmpty();selectAll.setEnabled(!busy&&!shown.isEmpty());cancelSelection.setEnabled(hasSelection);exportSelected.setEnabled(hasSelection);shareSelected.setEnabled(hasSelection);deleteSelected.setEnabled(hasSelection);if(adapter!=null)adapter.notifyDataSetChanged();}
     private List<File> choices(){return new ArrayList<>(selected);}
     @Override protected void onResume(){super.onResume();Ui.fullscreen(this);if(!busy)reload();}
     private void reload(){if(destroyed)return;final File dir=sourceRoot;final long quota=Config.quota(this);io.execute(()->{File[] files=LoopStore.files(dir);long used=0;ArrayList<File> clips=new ArrayList<>();for(File f:files){used+=f.length();if(f.getName().endsWith(".mp4"))clips.add(f);}Collections.reverse(clips);final long bytes=used;runOnUiThread(()->{if(destroyed||!sourceRoot.equals(dir))return;all.clear();all.addAll(clips);selected.retainAll(clips);summary.setText(String.format(Locale.CHINA,"%d 个片段  ·  视频 %.0f MB  ·  当前录像配额 %.0f MB",clips.size(),bytes/1048576.0,quota/1048576.0));pathLabel.setText(dir.getAbsolutePath());capacity.setProgress((int)Math.min(1000,bytes*1000/Math.max(1,quota)));applyFilter();});});}
@@ -119,7 +127,7 @@ public final class ClipsActivity extends Activity {
             OutputStream output=getContentResolver().openOutputStream(destination,"w");if(output==null)throw new IOException("无法写入目标目录");try(OutputStream out=output){ArchiveFiles.copy(source,out,()->cancelRequested);}saved=true;
         }finally{if(!saved&&destination!=null)try{DocumentsContract.deleteDocument(getContentResolver(),destination);}catch(Exception ignored){}}
     }
-    private void begin(String title,int total,boolean cancel){busy=true;cancelRequested=false;lastProgress=0;progress=new ProgressDialog(this);progress.setTitle(title);progress.setMessage("正在处理，请稍候…");progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);progress.setMax(total);progress.setCancelable(false);if(cancel)progress.setButton(DialogInterface.BUTTON_NEGATIVE,"取消导出",(DialogInterface.OnClickListener)null);progress.show();if(cancel)progress.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v->{cancelRequested=true;progress.setMessage("正在取消，已完成的副本会保留…");progress.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(false);});}
+    private void begin(String title,int total,boolean cancel){busy=true;updateSelection();cancelRequested=false;lastProgress=0;progress=new ProgressDialog(this);progress.setTitle(title);progress.setMessage("正在处理，请稍候…");progress.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);progress.setMax(total);progress.setCancelable(false);if(cancel)progress.setButton(DialogInterface.BUTTON_NEGATIVE,"取消导出",(DialogInterface.OnClickListener)null);progress.show();if(cancel)progress.getButton(DialogInterface.BUTTON_NEGATIVE).setOnClickListener(v->{cancelRequested=true;progress.setMessage("正在取消，已完成的副本会保留…");progress.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(false);});}
     private void updateProgress(int done,int total){long now=SystemClock.elapsedRealtime();if(done!=total&&now-lastProgress<150)return;lastProgress=now;runOnUiThread(()->{if(!destroyed&&progress!=null){progress.setProgress(done);progress.setMessage("已处理 "+done+" / "+total+" 个");}});}
     private void finishOperation(String title,String message){runOnUiThread(()->{if(destroyed)return;busy=false;operation=null;if(progress!=null){progress.dismiss();progress=null;}selected.clear();reload();new AlertDialog.Builder(this).setTitle(title).setMessage(message).setPositiveButton("知道了",null).show();});}
     @Override public void onBackPressed(){if(busy){Ui.toast(this,"请等待处理结束，或点击取消导出");return;}if(selecting){selecting=false;selected.clear();updateSelection();}else super.onBackPressed();}
