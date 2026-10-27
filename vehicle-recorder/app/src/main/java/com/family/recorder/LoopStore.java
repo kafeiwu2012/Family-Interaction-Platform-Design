@@ -3,7 +3,6 @@ package com.family.recorder;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Comparator;
 
 /** Only this app's dedicated segment names are ever eligible for removal. */
 final class LoopStore {
@@ -12,7 +11,7 @@ final class LoopStore {
     static File[] files(File dir) {
         File[] fs = dir.listFiles(LoopStore::owned);
         if (fs == null) return new File[0];
-        Arrays.sort(fs, Comparator.comparingLong(File::lastModified).thenComparing(File::getName));
+        Arrays.sort(fs, (a,b) -> { int time=Long.compare(a.lastModified(),b.lastModified()); return time==0?a.getName().compareTo(b.getName()):time; });
         return fs;
     }
     static long used(File dir) { long n = 0; for (File f : files(dir)) n += f.length(); return n; }

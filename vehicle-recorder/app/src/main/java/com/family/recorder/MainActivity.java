@@ -25,6 +25,8 @@ public final class MainActivity extends Activity {
         status.setText((RecorderService.recording?"● REC  ":"○ ")+RecorderService.status+String.format(Locale.CHINA,"  %02d:%02d",seconds/60,seconds%60));
         status.setTextColor(RecorderService.recording?0xFFFF706B:0xFFE7EDF6);
         image.setImageBitmap(RecorderService.frame);
+        int angle=Config.prefs(MainActivity.this).getInt("rotation",0);image.setRotation(angle);
+        float scale=angle%180==0||image.getWidth()==0?1f:Math.min(image.getWidth(),image.getHeight())/(float)Math.max(image.getWidth(),image.getHeight());image.setScaleX(scale);image.setScaleY(scale);
         space.setText("循环空间 "+Config.prefs(MainActivity.this).getInt("quota",2048)+" MB  ·  "+(Config.seconds(MainActivity.this)/60)+" 分钟/段\n"+Config.directory(MainActivity.this));
         start.setText(RecorderService.recording?"■ 停止并保存":"● 开始录像");ui.postDelayed(this,500);
     }};
@@ -95,7 +97,7 @@ public final class MainActivity extends Activity {
         }));dialog.show();
     }
     private void browse(File dir,EditText target){
-        ArrayList<File> dirs=new ArrayList<>();if(dir.getParentFile()!=null)dirs.add(dir.getParentFile());File[] children=dir.listFiles(File::isDirectory);if(children!=null){Arrays.sort(children,Comparator.comparing(File::getName));Collections.addAll(dirs,children);}String[] names=new String[dirs.size()];for(int i=0;i<names.length;i++)names[i]=(i==0&&dir.getParentFile()!=null?"↑ ":"")+dirs.get(i).getName();
+        ArrayList<File> dirs=new ArrayList<>();if(dir.getParentFile()!=null)dirs.add(dir.getParentFile());File[] children=dir.listFiles(File::isDirectory);if(children!=null){Arrays.sort(children,(a,b)->a.getName().compareTo(b.getName()));Collections.addAll(dirs,children);}String[] names=new String[dirs.size()];for(int i=0;i<names.length;i++)names[i]=(i==0&&dir.getParentFile()!=null?"↑ ":"")+dirs.get(i).getName();
         new AlertDialog.Builder(this).setTitle(dir.getAbsolutePath()).setItems(names,(d,n)->browse(dirs.get(n),target)).setPositiveButton("使用此目录",(d,n)->target.setText(new File(dir,"VehicleRecorder").getAbsolutePath())).setNegativeButton("取消",null).show();
     }
 }

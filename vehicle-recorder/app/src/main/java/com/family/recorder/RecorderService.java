@@ -116,7 +116,7 @@ public final class RecorderService extends Service {
         if(preview!=null){preview.close();preview=null;}
         if(current!=null){
             File marker=new File(current.getPath()+".lock");
-            if(valid){File dest=new File(current.getPath().replace(".part",".mp4"));
+            if(valid){File dest=new File(current.getParentFile(),current.getName().replace(".part",".mp4"));
             boolean safe=true;
             if(marker.exists())try{File targetMarker=new File(dest.getPath()+".lock");safe=targetMarker.exists()||targetMarker.createNewFile();}catch(IOException e){safe=false;}
             if(safe && current.renameTo(dest)){
