@@ -26,7 +26,11 @@ jobs:
         run: bash vehicle-recorder/tests/check.sh
       - name: Build and lint
         working-directory: vehicle-recorder
-        run: gradle --no-daemon :app:assembleDebug :app:lintDebug
+        run: |
+          if ! gradle --no-daemon :app:assembleDebug :app:lintDebug; then
+            cat app/build/reports/lint-results-debug.txt
+            exit 1
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: vehicle-recorder-debug
