@@ -6,7 +6,7 @@ import java.util.Arrays;
 
 /** Only this app's dedicated segment names are ever eligible for removal. */
 final class LoopStore {
-    static boolean owned(File f) { return f.isFile() && f.getName().matches("VR_[0-9]+_[FB]\\.(mp4|part)"); }
+    static boolean owned(File f) { return f.isFile() && ClipNames.owned(f.getName()); }
     static boolean locked(File f) { return new File(f.getPath() + ".lock").exists(); }
     static File[] files(File dir) {
         File[] fs = dir.listFiles(LoopStore::owned);
@@ -15,7 +15,7 @@ final class LoopStore {
         return fs;
     }
     static long used(File dir) { long n = 0; for (File f : files(dir)) n += f.length(); return n; }
-    static void prepare(File dir, long quota, long reserve, long freeFloor) throws IOException {
+    static synchronized void prepare(File dir, long quota, long reserve, long freeFloor) throws IOException {
         if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("无法创建目录");
         if (reserve > quota) throw new IOException("容量不足以容纳一个片段，请增加容量或缩短分段");
         for (File f : files(dir)) {

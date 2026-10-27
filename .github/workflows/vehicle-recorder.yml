@@ -25,6 +25,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.9'
+      - name: Keep the test signing key stable across subsequent builds
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: vehicle-recorder-debug-signing-v1
       - name: Storage policy and source checks
         run: bash vehicle-recorder/tests/check.sh
       - name: Build and lint
