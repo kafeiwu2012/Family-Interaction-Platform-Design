@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
             if(isCycle()){
                 int window=Integer.parseInt(photoWindow.getText().toString()),clip=Integer.parseInt(videoSeconds.getText().toString()),rest=Integer.parseInt(restSeconds.getText().toString());
                 if(window<10||window>86400||clip<2||clip>60||rest<0||rest>86400)throw new IllegalArgumentException();
-                summary.setText("每轮执行顺序\n① 拍照阶段 "+window+" 秒：首张立即拍，此后每 "+gap+" 秒一张，约 "+(1+(window-1)/gap)+" 张\n② 录制一段 "+clip+" 秒无声视频\n③ 等待 "+rest+" 秒，再回到①\n切换相机及初始化会增加实际耗时，当前拍摄完成后才进入下一阶段。");
+                summary.setText("拍照频率只在①阶段生效，②③阶段不拍照。\n每轮执行顺序\n① 拍照阶段 "+window+" 秒：首张立即拍，此后每 "+gap+" 秒一张，约 "+(1+(window-1)/gap)+" 张\n② 录制一段 "+clip+" 秒无声视频\n③ 等待 "+rest+" 秒，再回到①\n切换相机及初始化会增加实际耗时，当前拍摄完成后才进入下一阶段。");
             }else summary.setText("执行顺序\n启动后立即拍第一张，此后每 "+gap+" 秒拍一张，直到停止。\n"+(isLocal()?"全部保存在本机，不录像、不上传。":"只拍照并上传；间隔连接后由服务端配置覆盖，镜头由服务端控制。"));
             if(isLocal()&&alternate!=null&&alternate.isChecked())summary.append("\n镜头每工作 "+lensSeconds.getText()+" 秒交替一次；正在拍照/录像时延后到完成后再切换，不截断片段。");
         }catch(Exception e){summary.setText("请填写有效参数：拍照间隔/阶段10–86400秒，录像2–60秒，等待0–86400秒。");}
@@ -59,13 +59,13 @@ public class MainActivity extends Activity {
         url=field(uploadFields,"HTTPS 服务地址",p.getString("url",""));token=field(uploadFields,"设备令牌",p.getString("token",""));token.setInputType(InputType.TYPE_CLASS_TEXT|InputType.TYPE_TEXT_VARIATION_PASSWORD);
         text(settings,"2 · 拍摄方式",16);
         task=spinner(settings,"只定时拍照","循环：拍照 → 短录像 → 等待");task.setSelection(p.getBoolean("cycle",false)?1:0);
-        interval=number(settings,"两张照片之间的间隔（秒）",p.getInt("interval",60));
+        interval=number(settings,"拍照频率：每隔多久拍一张（秒）",p.getInt("interval",60));
         cycleFields=new LinearLayout(this);cycleFields.setOrientation(LinearLayout.VERTICAL);settings.addView(cycleFields);
-        photoWindow=number(cycleFields,"① 拍照阶段持续多久（秒）",p.getInt("photoWindow",60));
+        photoWindow=number(cycleFields,"① 每轮拍照阶段的总时长（秒）",p.getInt("photoWindow",60));
         videoSeconds=number(cycleFields,"② 接着录一段多久的视频（秒，无声）",p.getInt("videoSeconds",5));
         restSeconds=number(cycleFields,"③ 录像后休息多久再开始下一轮（秒）",p.getInt("restSeconds",10));
         Button example=button(cycleFields,"使用示例：拍30秒 → 录5秒 → 等10秒");example.setOnClickListener(v->{interval.setText("10");photoWindow.setText("30");videoSeconds.setText("5");restSeconds.setText("10");});
-        summary=new TextView(this);summary.setTextSize(12);summary.setPadding(dp(12),dp(12),dp(12),dp(12));summary.setBackgroundColor(0xff202824);settings.addView(summary);
+        summary=new TextView(this);summary.setTextSize(12);summary.setPadding(dp(12),dp(12),dp(12),dp(12));summary.setBackgroundColor(0xffedf4ed);settings.addView(summary);
         text(settings,"3 · 前后摄交替",16);
         alternate=new CheckBox(this);alternate.setTextSize(12);alternate.setText("按时间交替前后摄（仅本地，绝不同时开启）");alternate.setChecked(p.getBoolean("alternate",false));settings.addView(alternate);
         lensSeconds=number(settings,"每颗镜头工作多久再切换（10–86400秒）",p.getInt("lensSeconds",60));
