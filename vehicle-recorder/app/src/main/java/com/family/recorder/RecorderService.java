@@ -9,6 +9,8 @@ import android.os.*;
 import java.io.*;
 import java.util.*;
 
+// Permission requests are centralized in the non-exported Activity-to-Service entry.
+@android.annotation.SuppressLint("MissingPermission")
 @SuppressWarnings("deprecation")
 public final class RecorderService extends Service {
     static volatile boolean recording;
@@ -27,6 +29,11 @@ public final class RecorderService extends Service {
     private long generation;
     private int facing;
     private long lastName;
+    private final Runnable diskGuard=new Runnable(){public void run(){
+        if(!running)return;
+        if(Config.directory(RecorderService.this).getUsableSpace()<16L*1024*1024){shutdown("存储剩余不足 16 MB，已停止并保存");return;}
+        work.postDelayed(this,2000);
+    }};
     private final Runnable rotate=() -> { if(running) { finishClip(); beginClip(); } };
     @Override public void onCreate() {
         super.onCreate(); thread=new HandlerThread("vehicle-camera");thread.start();work=new Handler(thread.getLooper());
@@ -99,11 +106,11 @@ public final class RecorderService extends Service {
             recorder.setOnErrorListener((m,what,extra)->work.post(()->{if(generation==clipGeneration)shutdown("编码异常："+what);}));
             recorder.prepare();recorder.start();recording=true;protectedClip=false;started=SystemClock.elapsedRealtime();
             status="录像中 · "+(facing==0?"后置":"前置")+" · "+profile.videoFrameWidth+"×"+profile.videoFrameHeight;
-            work.postDelayed(rotate,Config.seconds(this)*1000L+1000);
+            work.postDelayed(rotate,Config.seconds(this)*1000L+1000);work.removeCallbacks(diskGuard);work.postDelayed(diskGuard,2000);
         } catch(Exception e){shutdown("录制停止："+e.getMessage());}
     }
     private void finishClip() {
-        generation++; work.removeCallbacks(rotate); boolean valid=false;
+        generation++; work.removeCallbacks(diskGuard); work.removeCallbacks(rotate); boolean valid=false;
         if(recorder!=null){recorder.setOnInfoListener(null);recorder.setOnErrorListener(null);try{recorder.stop();valid=true;}catch(RuntimeException e){status="片段过短或编码失败";}recorder.release();recorder=null;}
         if(camera!=null){try{camera.reconnect();camera.stopPreview();}catch(Exception ignored){}camera.release();camera=null;}
         if(preview!=null){preview.close();preview=null;}
