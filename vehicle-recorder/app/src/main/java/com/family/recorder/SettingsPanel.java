@@ -38,7 +38,7 @@ final class SettingsPanel {
         Switch auto=toggle(a,panels[2],"打开软件自动开始录像",pref.getBoolean("auto_start",true));
         section(a,panels[2],"横竖屏与全屏","默认横屏，可在主界面菜单手动切换为竖屏。选择会被记住，不随手机晃动自动旋转。菜单 8 秒无操作自动收起，右上角醒目标记可随时展开。默认预览铺满，可能裁切边缘；可切为完整画面，录像保留完整画幅。切换横竖屏会保存当前片段后继续。方向异常时在录像画质中设置校正角度。 ");
         section(a,panels[2],"熄屏持续录制","请在 ColorOS 中允许后台运行及自启动，并锁定最近任务。按电源键熄屏后继续录制；暗屏按钮只降低亮度。");
-        section(a,panels[2],"版本 1.2.0","GPU 直接预览 · 无位图回读\n建议先录制 1 分钟并回放，确认画面方向、声音和流畅度。");
+        section(a,panels[2],"版本 1.2.1","GPU 直接预览 · 无位图回读\n建议先录制 1 分钟并回放，确认画面方向、声音和流畅度。");
         LinearLayout actions=new LinearLayout(a);LinearLayout.LayoutParams ap=new LinearLayout.LayoutParams(-1,d(a,42));ap.setMargins(0,d(a,10),0,0);root.addView(actions,ap);
         Button cancel=Ui.button(a,"取消",Ui.MUTED,dialog::dismiss);actions.addView(cancel,new LinearLayout.LayoutParams(0,-1,1));
         Button save=Ui.button(a,"保存并应用",Ui.GREEN,()->{});LinearLayout.LayoutParams sp=new LinearLayout.LayoutParams(0,-1,2);sp.setMargins(d(a,8),0,0,0);actions.addView(save,sp);

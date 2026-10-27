@@ -10,6 +10,17 @@ public final class OrientationMathTest {
         equal(OrientationMath.rotation(270,true,0,0),270,"front portrait upright");
         equal(OrientationMath.rotation(90,true,90,0),180,"front sensor mounting variant");
         equal(OrientationMath.rotation(90,false,90,180),180,"manual mounting correction");
+        // Regression: R7sm front portrait preview was upside down when it reused MP4 rotation.
+        equal(OrientationMath.previewRotation(270,true,0,0),90,"front portrait preview mirror compensation");
+        equal(OrientationMath.rotation(270,true,0,0),270,"MP4 portrait metadata must remain separate");
+        equal(OrientationMath.previewRotation(270,true,90,0),0,"front landscape preview unchanged");
+        equal(OrientationMath.previewRotation(270,true,180,0),270,"front reverse portrait preview");
+        equal(OrientationMath.previewRotation(270,true,270,0),180,"front reverse landscape preview unchanged");
+        equal(OrientationMath.previewRotation(90,true,0,0),270,"alternate front sensor portrait compensation");
+        equal(OrientationMath.previewRotation(90,true,90,0),180,"alternate front sensor landscape preserved");
+        equal(OrientationMath.previewRotation(90,false,0,0),90,"rear portrait preview preserved");
+        equal(OrientationMath.previewRotation(90,false,90,0),0,"rear landscape preview preserved");
+        equal(OrientationMath.previewRotation(270,true,0,180),270,"front correction applies after preview compensation");
         equal(OrientationMath.normalize(-90),270,"normalization");
         for(int rotation=0;rotation<4;rotation++)equal(OrientationMath.displayDegrees(rotation),rotation*90,"Surface rotation conversion");
         float[] crop=OrientationMath.scale(1280,720,0,1080,1920,true);

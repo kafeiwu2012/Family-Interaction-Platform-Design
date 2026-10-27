@@ -22,11 +22,12 @@ public final class RecorderService extends Service {
     static void setDisplayRotation(int degrees){
         int next=OrientationMath.normalize(degrees);if(next==displayDegrees)return;displayDegrees=next;
         RecorderService service=instance;if(service!=null)service.work.post(()->{
+            if(service.preview!=null)service.preview.setStyle(service.desiredPreviewRotation(),Config.prefs(service).getBoolean("preview_fill",true));
             service.work.removeCallbacks(service.reorient);
             if(service.running)service.work.postDelayed(service.reorient,500);
         });
     }
-    static void refreshPreviewStyle(){RecorderService service=instance;if(service!=null)service.work.post(()->{if(service.preview!=null)service.preview.setStyle(service.clipRotation,Config.prefs(service).getBoolean("preview_fill",true));});}
+    static void refreshPreviewStyle(){RecorderService service=instance;if(service!=null)service.work.post(()->{if(service.preview!=null)service.preview.setStyle(service.desiredPreviewRotation(),Config.prefs(service).getBoolean("preview_fill",true));});}
     private static Surface displaySurface;
     private static int displayWidth,displayHeight;
     static synchronized void setPreviewSurface(Surface surface,int width,int height){
@@ -57,6 +58,7 @@ public final class RecorderService extends Service {
         work.postDelayed(this,2000);
     }};
     private int desiredRotation(){return OrientationMath.rotation(sensorRotation,facing==Camera.CameraInfo.CAMERA_FACING_FRONT,displayDegrees,Config.prefs(this).getInt("rotation",0));}
+    private int desiredPreviewRotation(){return OrientationMath.previewRotation(sensorRotation,facing==Camera.CameraInfo.CAMERA_FACING_FRONT,displayDegrees,Config.prefs(this).getInt("rotation",0));}
     private final Runnable reorient=new Runnable(){public void run(){
         if(!running||desiredRotation()==clipRotation)return;
         long remaining=1500-(SystemClock.elapsedRealtime()-started);
@@ -134,8 +136,8 @@ public final class RecorderService extends Service {
             }
             if(range!=null)p.setPreviewFpsRange(range[0],range[1]);
             p.setRecordingHint(true);camera.setParameters(p);
-            preview=new OffscreenPreview(work,best.width,best.height,clipRotation,Config.prefs(this).getInt("preview_fps",30));
-            preview.setStyle(clipRotation,Config.prefs(this).getBoolean("preview_fill",true));
+            preview=new OffscreenPreview(work,best.width,best.height,desiredPreviewRotation(),Config.prefs(this).getInt("preview_fps",30));
+            preview.setStyle(desiredPreviewRotation(),Config.prefs(this).getBoolean("preview_fill",true));
             preview.setOutput(displaySurface,displayWidth,displayHeight);
             camera.setPreviewTexture(preview.input);camera.startPreview();camera.unlock();
             recorder=new MediaRecorder();recorder.setCamera(camera);
