@@ -49,3 +49,5 @@ Android 5.1.1 / API 22 定时拍照 → HTTPS → 树莓派 3B（或 Linux 云�
 ## v0.4.2 浅色背景修复
 
 [下载 v0.4.2 APK](downloads/family-capture-0.4.2-debug.apk)。R7sm截图显示浅色文字属性已生效，但透明页面底部仍显示深色背景。本版为主界面、媒体列表和播放器控件的窗口及内容根布局显式设置浅色背景，并为静态和动态列表文字指定正常/禁用颜色，避免依赖厂商窗口背景实现。保留现有字号；视频画布仍为黑色。编译检查不等于ColorOS真机显示验收，覆盖安装后需复核。
+
+开发文档：[模块架构](docs/ARCHITECTURE.md) · [HTTP接口](docs/API.md) · [开发指南](docs/DEVELOPMENT.md) · [仓库文档索引](../docs/README.md)。

@@ -28,3 +28,6 @@
 - [真机测试步骤](android-family-capture/docs/DEVICE-TEST.md)
 
 GitHub Actions 工作流位于仓库根目录 `.github/workflows/`，构建路径已指向对应子模块。
+
+开发者入口：[开发文档索引](docs/README.md) · [系统与模块组织](docs/SYSTEM.md) · [家庭采集接口](android-family-capture/docs/API.md) · [家庭采集开发指南](android-family-capture/docs/DEVELOPMENT.md) · [行车记录仪开发指南](vehicle-recorder/docs/DEVELOPMENT.md)。
+
