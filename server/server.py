@@ -9,6 +9,7 @@ import re
 import shutil
 import sqlite3
 import time
+from urllib.parse import unquote
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 ROOT = Path(os.environ.get('CAPTURE_DATA', './data')).resolve()
@@ -96,8 +97,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_PUT(self):
         if not self.path.startswith('/api/upload/'): return self.reply(404, {'error':'not found'})
         if not self.authorized(): return
-        name=self.path[len('/api/upload/'):]
-        if not re.fullmatch(r'[0-9]{10,16}_(front|back)_[a-f0-9-]{36}\.jpg',name):
+        name=unquote(self.path[len('/api/upload/'):], encoding='utf-8', errors='replace')
+        if not (re.fullmatch(r'[0-9]{10,16}_(front|back)_[a-f0-9-]{36}\.jpg',name) or re.fullmatch(r'(前摄|后摄)_[0-9]{4}-[0-9]{2}-[0-9]{2}_[0-9]{2}-[0-9]{2}-[0-9]{2}-[0-9]{3}_[+-][0-9]{4}_[a-f0-9]{8}\.jpg',name)):
             return self.reply(400, {'error':'invalid name'})
         try:
             if shutil.disk_usage(ROOT).free < MAX_UPLOAD * 2: return self.reply(507, {'error':'disk full'})

@@ -13,6 +13,11 @@ public class CaptureService extends Service {
     private HandlerThread thread;
     private Handler handler;
     private CameraEngine camera;
+    private VideoEngine video;
+    private boolean busy, cycle;
+    private int photoWindow,videoSeconds,restSeconds;
+    private long phaseUntil;
+    private String phase="photo";
     private PowerManager.WakeLock wake;
     private final ExecutorService network=Executors.newSingleThreadExecutor();
     private volatile boolean running=false;
@@ -26,7 +31,7 @@ public class CaptureService extends Service {
     private static final long MAX_BYTES=256L*1024*1024;
     @Override public void onCreate() {
         super.onCreate();
-        thread=new HandlerThread("camera"); thread.start(); handler=new Handler(thread.getLooper()); camera=new CameraEngine(this,handler);
+        thread=new HandlerThread("camera"); thread.start(); handler=new Handler(thread.getLooper()); camera=new CameraEngine(this,handler); video=new VideoEngine(this,handler);
         queue=new File(getFilesDir(),"queue"); queue.mkdirs();
         File[] parts=queue.listFiles((d,n)->n.endsWith(".part")); if(parts!=null) for(File f:parts) f.delete();
         wake=((PowerManager)getSystemService(POWER_SERVICE)).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,"FamilyCapture:active");
@@ -38,6 +43,12 @@ public class CaptureService extends Service {
         localMode=p.getBoolean("local",true);
         facing=p.getString("facing","back");
         queue=new File(getFilesDir(),localMode?"local-photos":"queue"); queue.mkdirs();
+        File[] stale=queue.listFiles((d,n)->n.endsWith(".part"));if(stale!=null)for(File f:stale)f.delete();
+        cycle=localMode && p.getBoolean("cycle",false);
+        photoWindow=Math.max(10,Math.min(86400,p.getInt("photoWindow",60)));
+        videoSeconds=Math.max(2,Math.min(60,p.getInt("videoSeconds",5)));
+        restSeconds=Math.max(0,Math.min(86400,p.getInt("restSeconds",10)));
+        phaseUntil=SystemClock.elapsedRealtime()+photoWindow*1000L;
         if(seconds<10 || seconds>86400) seconds=60;
         if(!localMode && (!base.startsWith("https://") || token.length()<32)) { stopSelf(); return START_NOT_STICKY; }
         running=true; startForeground(1,notification("定时相机运行中")); wake.setReferenceCounted(false); wake.acquire(10*60*1000L);
@@ -64,13 +75,28 @@ public class CaptureService extends Service {
         wake.acquire(10*60*1000L);
         if(localMode) facing=getSharedPreferences("config",0).getString("facing","back");
         long now=SystemClock.elapsedRealtime();
-        if(enabled && now>=nextCapture) {
+        if(cycle && !busy && "rest".equals(phase) && now>=phaseUntil){phase="photo";phaseUntil=now+photoWindow*1000L;nextCapture=0;}
+        if(cycle && !busy && "photo".equals(phase) && now>=phaseUntil){
+            phase="video";
+            if(queuedBytes()>MAX_BYTES||queue.getUsableSpace()<64L*1024*1024){
+                phase="rest";phaseUntil=now+Math.max(10,restSeconds)*1000L;notifyStatus("空间不足，暂停录像，请清理本地文件");
+            }else{
+                busy=true;String selected=facing;
+                notifyStatus("正在录制无声视频 "+selected+" · "+videoSeconds+"秒");
+                video.record(selected,new File(queue,MediaNames.create(selected,"mp4")),videoSeconds,(ok,detail)->{
+                    busy=false;phase="rest";phaseUntil=SystemClock.elapsedRealtime()+restSeconds*1000L;
+                    notifyStatus((ok?"录像成功 · ":"录像失败 · ")+detail+"；等待下一拍照时段");
+                });
+            }
+        }
+        if(enabled && !busy && "photo".equals(phase) && now>=nextCapture) {
             nextCapture=now+seconds*1000L;
             if(queuedBytes()>MAX_BYTES || queue.getUsableSpace()<32L*1024*1024) notifyStatus(localMode?"本地空间不足，暂停拍摄；请删除测试照片":"存储不足，暂停拍摄；等待上传释放空间");
             else {
                 String selected=facing;
-                File out=new File(queue,System.currentTimeMillis()+"_"+selected+"_"+UUID.randomUUID()+".jpg");
-                camera.capture(selected,out,(ok,detail)->notifyStatus((ok?(localMode?"已保存本地 ":"已拍摄 "):"拍摄失败 ")+selected+" · "+detail));
+                File out=new File(queue,MediaNames.create(selected,"jpg"));
+                busy=true;
+                camera.capture(selected,out,(ok,detail)->{busy=false;notifyStatus((ok?(localMode?"已保存本地 ":"已拍摄 "):"拍摄失败 ")+selected+" · "+detail);});
             }
         }
         handler.postDelayed(this,1000);
@@ -97,7 +123,7 @@ public class CaptureService extends Service {
         } finally { c.disconnect(); }
     }
     private void upload(File file) throws Exception {
-        HttpURLConnection c=connection("/api/upload/"+file.getName(),"PUT");
+        HttpURLConnection c=connection("/api/upload/"+java.net.URLEncoder.encode(file.getName(),"UTF-8"),"PUT");
         try {
             c.setDoOutput(true); c.setRequestProperty("Content-Type","image/jpeg"); c.setFixedLengthStreamingMode(file.length());
             try(InputStream in=new FileInputStream(file); OutputStream out=c.getOutputStream()) {
@@ -125,7 +151,7 @@ public class CaptureService extends Service {
                 poll(); heartbeat();
                 File[] files=queue.listFiles((d,n)->n.endsWith(".jpg"));
                 if(files!=null) {
-                    Arrays.sort(files);
+                    Arrays.sort(files,(a,b)->Long.compare(a.lastModified(),b.lastModified()));
                     for(int i=0;running && i<Math.min(files.length,3);i++) upload(files[i]);
                 }
                 failures=0;
@@ -137,7 +163,7 @@ public class CaptureService extends Service {
     @Override public void onDestroy() {
         getSharedPreferences("runtime",0).edit().putString("status","已停止").apply();
         running=false; handler.removeCallbacksAndMessages(null);
-        handler.post(()->{ camera.close(); thread.quitSafely(); });
+        handler.post(()->{ camera.close(); video.close(); thread.quitSafely(); });
         network.shutdownNow(); if(wake.isHeld()) wake.release(); stopForeground(true); super.onDestroy();
     }
     @Override public IBinder onBind(Intent i) { return null; }

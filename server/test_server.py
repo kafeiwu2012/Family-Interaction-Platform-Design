@@ -32,6 +32,16 @@ class Integration(unittest.TestCase):
         self.assertFalse(self.request('GET','/admin/status',token='a'*32)[1]['reported']['online'])
         self.assertEqual(self.request('POST','/api/status',b'{"camera":"front"}')[0],200)
         self.assertTrue(self.request('GET','/admin/status',token='a'*32)[1]['reported']['online'])
+    def test_readable_unicode_filename(self):
+        from urllib.parse import quote
+        name='前摄_2026-10-27_14-30-00-123_+0800_1234abcd.jpg'
+        path='/api/upload/'+quote(name)
+        data=b'\xff\xd8test\xff\xd9'
+        self.assertEqual(self.request('PUT',path,data)[0],201)
+        self.assertTrue((server.ROOT/'photos'/name).exists())
+        self.assertEqual(self.request('PUT',path,data)[0],201)
+        self.assertEqual(self.request('PUT','/api/upload/'+quote('../'+name),data)[0],400)
+
     def test_retry_and_conflict(self):
         path='/api/upload/1793000000000_back_12345678-1234-1234-1234-123456789abc.jpg'
         data=b'\xff\xd8test\xff\xd9'
