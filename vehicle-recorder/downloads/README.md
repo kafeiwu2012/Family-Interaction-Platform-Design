@@ -1,24 +1,28 @@
 # 行车记录仪测试安装包
 
-## 最新版 1.2.2
+## 最新版 1.3.0
 
-[下载 vehicle-recorder-1.2.2-debug.apk](./vehicle-recorder-1.2.2-debug.apk?raw=true)
+[下载 vehicle-recorder-1.3.0-debug.apk](./vehicle-recorder-1.3.0-debug.apk?raw=true)
 
-- 菜单入口改为圆圈内居中的齿轮，展开时显示关闭图标，保留 52dp 点击区域和中文读屏描述。
-- 点击时按钮轻微上浮并放大后恢复，默认动画时间合计约 240ms；无循环动效，不对相机画面加动画。
-- 系统省电模式或关闭动画时跳过，连续点击、切屏或熄屏时取消复位。仍有少量瞬时渲染开销，不承诺零功耗。
-- 保留 1.2.1 前置竖屏预览方向修复及全部录像功能。
+**入口：齿轮 → 录像库 → 多选（或长按录像）**
 
-[菜单交互说明](../docs/MENU_INTERACTION.md) · [使用说明](../README.md) · [更新记录](../docs/CHANGELOG.md) · [构建记录](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40466941601)
+- 多选、全选当前筛选、清空、批量删除；受保护录像自动跳过删除。
+- 单条/批量导出：系统目录/SD 卡或本地路径，每次新建独立子目录，不主动删除源录像。
+- 单条/批量 Android 分享，只读授权；浏览当前、默认及预存目录，不改变录制保存位置。
+- 进度、取消及结果汇总。窄屏操作条可左右滚动。
+- 保留前置竖屏方向修复、齿轮轻量点击反馈及全部录制功能。
 
-编译、Android lint 和现有自动化检查通过，实际交互和功耗表现仍待 R7sm 真机验证。
+[批量管理和导出说明](../docs/RECORDING_MANAGEMENT.md) · [使用说明](../README.md) · [更新记录](../docs/CHANGELOG.md) · [构建记录](https://github.com/kafeiwu2012/Family-Interaction-Platform-Design/actions/runs/40469129858)
 
-**本次已核对与此前提供的 1.2.1 测试签名不同。先备份录像、记录保存路径，再卸载旧版安装；应用专用目录随卸载删除。**
+编译、Android lint、文件操作及现有自动化检查通过；系统目录选择器、外置卡和分享接收应用仍待 R7sm 真机验收。导出期间未保护的原录像仍参与循环覆盖，重要录像先保护。
 
-SHA-256：`26369edc3d63ac5e016af3c108ddbc80e82118b4ea1f78f8d05519f489bf5667`，亦见 SHA256SUMS。
+**本包与此前提供的 1.2.2 测试签名不同。升级前请使用文件管理器备份录像、记下保存路径，再卸载旧版安装；应用专用目录随卸载删除。**
+
+SHA-256：`13e9b31a87d102ff38c2955e8344dba074de252221344d1a19f593599700f77a`，亦见 SHA256SUMS。
 
 ## 历史版
 
+- [1.2.2](./vehicle-recorder-1.2.2-debug.apk?raw=true)
 - [1.2.1](./vehicle-recorder-1.2.1-debug.apk?raw=true)
 - [1.2.0](./vehicle-recorder-1.2.0-debug.apk?raw=true)
 - [1.1.1](./vehicle-recorder-1.1.1-debug.apk?raw=true)
