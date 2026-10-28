@@ -1,11 +1,22 @@
 # Family Interaction Platform
 
-仓库按功能子模块组织，包含家庭影像采集与 OPPO R7sm 行车记录仪。
+仓库按功能子模块组织，包含家庭影像采集、OPPO R7sm 行车记录仪，以及 Windows 与 iPhone/iPad 局域网文件共享。
 
 | 子模块 | 内容 | 入口 |
 | --- | --- | --- |
 | `android-family-capture/` | Android 定时拍照、短录像、串行镜头交替及树莓派接收服务 | [源码与说明](android-family-capture/README.md) |
 | `vehicle-recorder/` | OPPO R7sm 行车记录仪：循环录像、容量与路径设置、前后镜头切换、熄屏录制、GPU 预览、录制中设置及启动自动录像 | [源码与说明](vehicle-recorder/README.md) |
+| `LanBridge/` | Windows 与 iPhone/iPad 局域网文件共享：上传下载、文件预览、复制、移动、改名、删除与文本编辑，支持传输进度、分块校验及备份 | [软件下载](LanBridge/downloads/LanBridge-Windows.zip?raw=true) · [源码与说明](LanBridge/README.md) |
+
+## LanBridge · Windows 与 iPhone/iPad 文件共享
+
+**[下载 Windows 软件包（x64 / ARM64 EXE，含源码）](LanBridge/downloads/LanBridge-Windows.zip?raw=true)** · [使用说明](LanBridge/README.md) · [SHA-256 校验值](LanBridge/downloads/SHA256SUMS.txt)
+
+解压后运行对应架构的 EXE，电脑和 iPhone/iPad 连接同一 Wi-Fi，在 Safari 打开程序窗口显示的网址即可使用。Windows 端自动打开操作界面。
+
+上传采用分块 SHA-256 校验和失败重试，完成后提交文件；提供传输进度，删除文件和文本编辑前版本保留备份。iOS 通过系统选择器上传与下载，只能管理共享空间和主动选择的文件。
+
+当前版本适用于可信局域网，使用 HTTP；已通过自动化测试和交叉编译，Windows 与 iPhone/iPad 真机兼容性仍待验证。
 
 ## 行车记录仪 · v1.3.1
 
